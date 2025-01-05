@@ -10,33 +10,38 @@ FetchContent_Declare(SFML
     GIT_TAG 2.6.x)
 FetchContent_MakeAvailable(SFML)
 
-set(PROJECT_HEADERS 
+set(PROJECT_HEADERS
     include/Utils/Constants.h
+    include/Utils/Vector.h
 
     include/Core/AssetManager.h
     include/Core/Game.h
     include/Core/World.h
+    include/Core/SpawnPool.h
 
     include/Gameplay/Enemy.h
     include/Gameplay/GameObject.h
     include/Gameplay/Zombie.h
-
+    include/Gameplay/Player.h
 )
 
-set(PROJECT_SOURCES 
+set(PROJECT_SOURCES
+    src/Utils/Vector.cpp
 
     src/Core/AssetManager.cpp
     src/Core/Game.cpp
     src/Core/World.cpp
+    src/Core/SpawnPool.cpp
 
     src/Gameplay/Enemy.cpp
     src/Gameplay/Zombie.cpp
+    src/Gameplay/Player.cpp
 
     src/main.cpp
 )
 
-set(PROJECT_FILES 
-  ${PROJECT_HEADERS} 
+set(PROJECT_FILES
+  ${PROJECT_HEADERS}
   ${PROJECT_SOURCES}
 )
 

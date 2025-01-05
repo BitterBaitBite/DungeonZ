@@ -3,23 +3,25 @@
 #include <Gameplay/GameObject.h>
 #include <SFML/Graphics/Sprite.hpp>
 
-class Enemy : public GameObject {
+class Player : public GameObject {
     public:
-        struct EnemyDescriptor {
+        struct PlayerDescriptor {
             sf::Vector2f position;
             sf::Texture* texture { nullptr };
             float tileWidth { .0f };
             float tileHeight { .0f };
         };
 
-        ~Enemy() override = default;
+        ~Player() override = default;
 
-        bool init(const EnemyDescriptor& enemyDescriptor);
+        bool init(const PlayerDescriptor& playerDescriptor);
 
         void update(float deltaMilliseconds) override;
         void render(sf::RenderWindow& window) override;
 
-    protected:
+    private:
+        sf::Vector2f _direction { .0f, .0f };
+        sf::Vector2f _speed { .0f, .0f };
         sf::Sprite _sprite;
         float _tileWidth { .0f };
         float _tileHeight { .0f };

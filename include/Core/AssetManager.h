@@ -3,27 +3,22 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <unordered_map>
 
-namespace sf
-{
-	sf::Texture;
+namespace sf {
+    Texture;
 }
 
-class AssetManager
-{
-	public:
+class AssetManager {
+    public:
+        static AssetManager* getInstance();
 
-		static AssetManager* getInstance();
+        ~AssetManager();
 
-		~AssetManager();
+        sf::Texture* loadTexture(const char* assetPath);
 
-		sf::Texture* loadTexture(const char* assetPath);
+        sf::Texture* getTexture(const char* assetPath) const;
 
-		sf::Texture* getTexture(const char* assetPath) const;
+    private:
+        static AssetManager* _instance;
 
-
-	private:
-
-		static AssetManager* s_instance;
-
-		std::unordered_map<std::string, sf::Texture*> m_texturePathToTexture;
+        std::unordered_map<std::string, sf::Texture*> _texturePathToTexture;
 };
