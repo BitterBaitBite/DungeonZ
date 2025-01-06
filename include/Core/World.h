@@ -16,7 +16,7 @@ class World {
         ~World();
 
         // TO-DO: Ideally the scene should be read from file.
-        bool load();
+        bool load(sf::RenderWindow* window);
 
         void update(uint32_t deltaMilliseconds);
         void render(sf::RenderWindow& window);
@@ -25,5 +25,5 @@ class World {
         // This is just an example. Think a good way to group the actors of your game. If they need any type of manager, etc...
         Enemy* _enemy { nullptr };
 
-        std::list<GameObject> _gameHierarchy;
+        std::list<GameObject*> _gameObjects;
 };

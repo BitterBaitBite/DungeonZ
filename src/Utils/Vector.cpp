@@ -3,7 +3,11 @@
 
 #include "SFML/System/Vector2.hpp"
 
-static sf::Vector2f normalize(sf::Vector2f v) {
+sf::Vector2f Vector::normalizeVector(sf::Vector2f v) {
+    if (v.x == .0f && v.y == .0f) {
+        return v;
+    }
+
     sf::Vector2f normal;
 
     float magnitude = sqrtf(v.x * v.x + v.y * v.y);

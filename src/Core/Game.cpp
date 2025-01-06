@@ -10,7 +10,7 @@ bool Game::init(GameCreateInfo& createInfo) {
     _window = new sf::RenderWindow({ createInfo.screenWidth, createInfo.screenHeight }, createInfo.gameTitle);
     _window->setFramerateLimit(createInfo.frameRateLimit);
     _world = new World();
-    const bool loadOk = _world->load();
+    const bool loadOk = _world->load(_window);
 
     return loadOk;
 }

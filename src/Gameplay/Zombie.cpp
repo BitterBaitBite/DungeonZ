@@ -1,10 +1,13 @@
 #include <Gameplay/Zombie.h>
 #include <SFML/Window/Keyboard.hpp>
 
+#include "../../build/_deps/sfml-src/src/SFML/Window/Win32/CursorImpl.hpp"
+#include "SFML/Window/ContextSettings.hpp"
 #include "Utils/Vector.h"
 
 bool Zombie::init(const ZombieDescriptor& zombieDescriptor) {
     _speed = zombieDescriptor.speed;
+    printf("%f, %f", zombieDescriptor.position.x, zombieDescriptor.position.y);
 
     return Enemy::init(zombieDescriptor);
 }
@@ -20,25 +23,27 @@ void Zombie::update(float deltaMilliseconds) {
 }
 
 void Zombie::calcMoveInput() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+    printf("x: %f, y: %f \n", _position.x, _position.y);
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
         _direction.x = -1.0f;
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
         _direction.x = 1.0f;
     }
     else {
         _direction.x = .0f;
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
         _direction.y = -1.0f;
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
         _direction.y = 1.0f;
     }
     else {
         _direction.y = .0f;
     }
 
-    _direction = normalize(_direction);
+    _direction = Vector::normalizeVector(_direction);
 }

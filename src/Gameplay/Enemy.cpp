@@ -2,8 +2,10 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 bool Enemy::init(const EnemyDescriptor& enemyDescriptor) {
-    _sprite.setTexture(*enemyDescriptor.texture);
+    _position = enemyDescriptor.position;
+
     _sprite.setPosition(enemyDescriptor.position);
+    _sprite.setTexture(*enemyDescriptor.texture);
     _tileWidth = enemyDescriptor.tileWidth;
     _tileHeight = enemyDescriptor.tileHeight;
 
