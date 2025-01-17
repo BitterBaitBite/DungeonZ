@@ -1,33 +1,49 @@
 #include <Gameplay/Zombie.h>
 #include <SFML/Window/Keyboard.hpp>
 
-bool Zombie::init(const ZombieDescriptor& zombieDescriptor)
-{
-	m_speed = zombieDescriptor.speed;
-	
-	return Enemy::init(zombieDescriptor);
+#include "../../build/_deps/sfml-src/src/SFML/Window/Win32/CursorImpl.hpp"
+#include "SFML/Window/ContextSettings.hpp"
+#include "Utils/Vector.h"
+
+bool Zombie::init(const ZombieDescriptor& zombieDescriptor) {
+    _speed = zombieDescriptor.speed;
+    printf("%f, %f", zombieDescriptor.position.x, zombieDescriptor.position.y);
+
+    return Enemy::init(zombieDescriptor);
 }
 
-void Zombie::update(float deltaMilliseconds)
-{
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-	{
-		m_direction.x = -1.0f;
-	}
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-	{
-		m_direction.x = 1.0f;
-	}
-	else
-	{
-		m_direction.x = .0f;
-	}
+void Zombie::update(float deltaMilliseconds) {
+    calcMoveInput();
 
-	// Update final position
-	// IMPORTANT NOTE!! We are using delta time to change the position according to the elapsed time so, it doesn't matter how many FPS (calls to update per second) we do, 
-	// the sprite changes according to the elapsed time and not to the number of calls
-	m_position.x += (m_direction.x * m_speed.x * deltaMilliseconds);
-	m_position.y += (m_direction.y * m_speed.y * deltaMilliseconds);
+    // Update final position
+    _position.x += (_direction.x * _speed.x * deltaMilliseconds);
+    _position.y += (_direction.y * _speed.y * deltaMilliseconds);
 
-	Enemy::update(deltaMilliseconds);
+    Enemy::update(deltaMilliseconds);
+}
+
+void Zombie::calcMoveInput() {
+    printf("x: %f, y: %f \n", _position.x, _position.y);
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+        _direction.x = -1.0f;
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+        _direction.x = 1.0f;
+    }
+    else {
+        _direction.x = .0f;
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+        _direction.y = -1.0f;
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+        _direction.y = 1.0f;
+    }
+    else {
+        _direction.y = .0f;
+    }
+
+    _direction = Vector::normalizeVector(_direction);
 }

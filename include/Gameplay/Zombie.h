@@ -2,23 +2,19 @@
 
 #include <Gameplay/Enemy.h>
 
+class Zombie : public Enemy {
+    public:
+        struct ZombieDescriptor : EnemyDescriptor {
+            sf::Vector2f speed { .0f, .0f };
+        };
 
-class Zombie : public Enemy
-{
-	public:
+        bool init(const ZombieDescriptor& enemyDescriptor);
 
-		struct ZombieDescriptor : EnemyDescriptor
-		{
-			sf::Vector2f speed{ .0f, .0f };
-		};
+        void update(float deltaMilliseconds) override;
 
-		bool init(const ZombieDescriptor& enemyDescriptor);
+        void calcMoveInput();
 
-		void update(float deltaMilliseconds) override;
-
-
-	private:
-
-		sf::Vector2f m_direction{ .0f, .0f };
-		sf::Vector2f m_speed{ .0f, .0f };
+    private:
+        sf::Vector2f _direction { .0f, .0f };
+        sf::Vector2f _speed { .0f, .0f };
 };
