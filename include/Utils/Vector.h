@@ -3,5 +3,6 @@
 
 class Vector {
     public:
-        static sf::Vector2f normalizeVector(sf::Vector2f vector);
+        static sf::Vector2f normalize(sf::Vector2f vector);
+        static float magnitude(sf::Vector2f vector);
 };

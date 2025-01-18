@@ -11,13 +11,17 @@ FetchContent_Declare(SFML
 FetchContent_MakeAvailable(SFML)
 
 set(PROJECT_HEADERS
+    include/Enums/FaceDirection.h
+
     include/Utils/Constants.h
     include/Utils/Vector.h
 
     include/Core/AssetManager.h
+    include/Core/SpawnPool.h
     include/Core/Game.h
     include/Core/World.h
-    include/Core/SpawnPool.h
+    include/Core/Room.h
+    include/Core/Tile.h
 
     include/Gameplay/Enemy.h
     include/Gameplay/GameObject.h
@@ -29,9 +33,11 @@ set(PROJECT_SOURCES
     src/Utils/Vector.cpp
 
     src/Core/AssetManager.cpp
+    src/Core/SpawnPool.cpp
     src/Core/Game.cpp
     src/Core/World.cpp
-    src/Core/SpawnPool.cpp
+    src/Core/Room.cpp
+    src/Core/Tile.cpp
 
     src/Gameplay/Enemy.cpp
     src/Gameplay/Zombie.cpp

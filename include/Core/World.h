@@ -4,6 +4,7 @@
 #include <list>
 
 #include "Gameplay/GameObject.h"
+#include "Gameplay/Player.h"
 
 class Enemy;
 
@@ -23,7 +24,9 @@ class World {
 
     private:
         // This is just an example. Think a good way to group the actors of your game. If they need any type of manager, etc...
-        Enemy* _enemy { nullptr };
+        // Enemy* _enemy { nullptr };
+
+        Player* _player { nullptr };
 
         std::list<GameObject*> _gameObjects;
 };

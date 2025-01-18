@@ -3,35 +3,47 @@
 #include <Gameplay/Zombie.h>
 #include <SFML/Graphics/RenderWindow.hpp>
 
+#include "Assets/SpriteSheet.h"
+#include "Gameplay/Player.h"
+
 World::~World() {
-    delete _enemy;
+    delete _player;
+    // delete _enemy;
 }
 
 bool World::load(sf::RenderWindow* window) {
     constexpr float millisecondsToSeconds = 1 / 1000.f;
 
-    // TO DO, read ALL from file, this is just a quick example to understand that here is where entities are created but consider grouping/managing actors in a smarter way
-    sf::Texture* zombieTexture = AssetManager::getInstance()->loadTexture("../Data/Images/Enemies/zombie.png");
-    Zombie::ZombieDescriptor zombieDescriptor;
-    zombieDescriptor.texture = zombieTexture;
-    zombieDescriptor.position = sf::Vector2f(window->getSize().x / 2, window->getSize().y / 2);
-    zombieDescriptor.speed = { 400.f * millisecondsToSeconds, 400.f * millisecondsToSeconds };
-    // 400 units per second, or 0.4 units per millisecond, using the latter so it's in alignment with delta time
-    zombieDescriptor.tileWidth = 192.f;
-    zombieDescriptor.tileHeight = 256.f;
+    //----------------- PLAYER TEST ---------------------
+    // TO DO read from file
+    // Player data: (texture path, rows, cols, speed)
+    SpriteSheet::SheetDescriptor playerSheetDesc;
+    playerSheetDesc.path = "../Data/Images/Player/Warrior_Blue.png";
+    playerSheetDesc.rows = 8;
+    playerSheetDesc.cols = 6;
+    auto playerSpriteSheet = new SpriteSheet();
+    playerSpriteSheet->init(playerSheetDesc);
 
-    auto zombie = new Zombie();
-    const bool initOk = zombie->init(zombieDescriptor);
+    Player::PlayerDescriptor playerDesc;
+    sf::Texture* playerTexture = AssetManager::getInstance()->loadTexture(playerSpriteSheet->getPath());
+    playerDesc.texture = playerTexture;
+    playerDesc.position = sf::Vector2f(window->getSize().x / 2, window->getSize().y / 2);
+    playerDesc.scale = sf::Vector2f(1.f, 1.f);
+    playerDesc.speed = { 400.f * millisecondsToSeconds, 400.f * millisecondsToSeconds };
+    playerDesc.tileHeight = (playerDesc.texture->getSize().y / playerSpriteSheet->getRows()) * playerDesc.scale.x;
+    playerDesc.tileWidth = (playerDesc.texture->getSize().x / playerSpriteSheet->getRows()) * playerDesc.scale.y;
 
-    _enemy = zombie;
+    _player = new Player();
+    const bool playerOk = _player->init(playerDesc);
+    //--------------------------------------------------
 
-    return initOk;
+    return playerOk;
 }
 
 void World::update(uint32_t deltaMilliseconds) {
-    _enemy->update(deltaMilliseconds);
+    _player->update(deltaMilliseconds);
 }
 
 void World::render(sf::RenderWindow& window) {
-    _enemy->render(window);
+    _player->render(window);
 }

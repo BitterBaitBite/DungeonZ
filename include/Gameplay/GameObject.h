@@ -17,7 +17,7 @@ class GameObject {
         sf::Vector2f& getPosition() { return _position; }
 
         // Setters
-        void setPosition(const sf::Vector2f& newPosition) { _position = newPosition; }
+        virtual void setPosition(const sf::Vector2f& newPosition) { _position = newPosition; }
 
         // Methods
         virtual void update(float delta) = 0;

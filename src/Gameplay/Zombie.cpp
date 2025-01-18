@@ -7,7 +7,6 @@
 
 bool Zombie::init(const ZombieDescriptor& zombieDescriptor) {
     _speed = zombieDescriptor.speed;
-    printf("%f, %f", zombieDescriptor.position.x, zombieDescriptor.position.y);
 
     return Enemy::init(zombieDescriptor);
 }
@@ -45,5 +44,5 @@ void Zombie::calcMoveInput() {
         _direction.y = .0f;
     }
 
-    _direction = Vector::normalizeVector(_direction);
+    _direction = Vector::normalize(_direction);
 }
