@@ -1,11 +1,12 @@
 #pragma once
 
-#include <cstdint>
-#include <list>
+#include <unordered_set>
 
 #include "Gameplay/GameObject.h"
 #include "Gameplay/Player.h"
 
+class Background;
+class Room;
 class Enemy;
 
 namespace sf {
@@ -23,10 +24,8 @@ class World {
         void render(sf::RenderWindow& window);
 
     private:
-        // This is just an example. Think a good way to group the actors of your game. If they need any type of manager, etc...
-        // Enemy* _enemy { nullptr };
-
+        Background* _background { nullptr };
+        Room* _level01 { nullptr };
+        std::unordered_set<Enemy*> _enemyList { nullptr };
         Player* _player { nullptr };
-
-        std::list<GameObject*> _gameObjects;
 };

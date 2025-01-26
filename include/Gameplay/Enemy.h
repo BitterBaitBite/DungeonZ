@@ -3,6 +3,8 @@
 #include <Gameplay/GameObject.h>
 #include <SFML/Graphics/Sprite.hpp>
 
+#include "Interfaces/IDamageable.h"
+
 class Enemy : public GameObject {
     public:
         struct EnemyDescriptor {

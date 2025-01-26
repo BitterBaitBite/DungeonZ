@@ -1,7 +1,6 @@
 #pragma once
-#include <string>
 
-#include "SFML/System/Vector2.hpp"
+#include "sfml\Graphics.hpp"
 
 class SpriteSheet {
     public:
@@ -9,16 +8,23 @@ class SpriteSheet {
             const char* path;
             int rows;
             int cols;
+            sf::Vector2i tileOffset;
+            sf::IntRect renderRect;
         };
 
-        SpriteSheet() {};
+        SpriteSheet(SheetDescriptor descriptor) : _path(descriptor.path), _rows(descriptor.rows), _cols(descriptor.cols), _offset(descriptor.tileOffset), _rect(descriptor.renderRect) {};
+        ~SpriteSheet() { delete _path; _path = nullptr; };
 
-        void init(const SheetDescriptor& sheet) { _sheet = sheet; }
-
-        int getRows() const { return _sheet.rows; }
-        int getCols() const { return _sheet.cols; }
-        const char* getPath() const { return _sheet.path; }
+        int getRows() const { return _rows; }
+        int getCols() const { return _cols; }
+        const char* getPath() const { return _path; }
+        sf::Vector2i getOffset() const { return _offset; }
+        sf::IntRect getRect() const { return _rect; }
 
     private:
-        SheetDescriptor _sheet;
+        int _rows;
+        int _cols;
+        const char* _path;
+        sf::Vector2i _offset;
+        sf::IntRect _rect;
 };

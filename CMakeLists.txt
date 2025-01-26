@@ -13,6 +13,8 @@ FetchContent_MakeAvailable(SFML)
 set(PROJECT_HEADERS
     include/Enums/FaceDirection.h
 
+    include/Interfaces/IDamageable.h
+
     include/Utils/Constants.h
     include/Utils/Vector.h
 
@@ -20,12 +22,14 @@ set(PROJECT_HEADERS
     include/Core/SpawnPool.h
     include/Core/Game.h
     include/Core/World.h
-    include/Core/Room.h
-    include/Core/Tile.h
+
+    include/Map/Background.h
+    include/Map/Room.h
+    include/Map/Tile.h
 
     include/Gameplay/Enemy.h
     include/Gameplay/GameObject.h
-    include/Gameplay/Zombie.h
+    include/Gameplay/Villager.h
     include/Gameplay/Player.h
 )
 
@@ -36,11 +40,13 @@ set(PROJECT_SOURCES
     src/Core/SpawnPool.cpp
     src/Core/Game.cpp
     src/Core/World.cpp
-    src/Core/Room.cpp
-    src/Core/Tile.cpp
+
+    src/Map/Background.cpp
+    src/Map/Room.cpp
+    src/Map/Tile.cpp
 
     src/Gameplay/Enemy.cpp
-    src/Gameplay/Zombie.cpp
+    src/Gameplay/Villager.cpp
     src/Gameplay/Player.cpp
 
     src/main.cpp
