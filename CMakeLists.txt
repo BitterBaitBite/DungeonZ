@@ -5,12 +5,26 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 include(FetchContent)
+
+# SFML
 FetchContent_Declare(SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
     GIT_TAG 2.6.x)
 FetchContent_MakeAvailable(SFML)
 
+# Download and add tmxlite (tiled editor loader) as a dependency
+FetchContent_Declare(
+    TMXLITE
+    GIT_REPOSITORY https://github.com/fallahn/tmxlite.git
+    GIT_TAG v1.4.4
+    SOURCE_SUBDIR tmxlite)
+FetchContent_MakeAvailable(TMXLITE)
+
+
 set(PROJECT_HEADERS
+    include/Render/SFMLOrthogonalLayer.h
+    include/UI/UIScreenMainMenu.h
+
     include/Enums/FaceDirection.h
 
     include/Interfaces/IDamageable.h
@@ -27,6 +41,7 @@ set(PROJECT_HEADERS
     include/Map/Room.h
     include/Map/Tile.h
 
+    include/Gameplay/Dungeon.h
     include/Gameplay/Enemy.h
     include/Gameplay/GameObject.h
     include/Gameplay/Villager.h
@@ -45,6 +60,7 @@ set(PROJECT_SOURCES
     src/Map/Room.cpp
     src/Map/Tile.cpp
 
+    src/Gameplay/Dungeon.cpp
     src/Gameplay/Enemy.cpp
     src/Gameplay/Villager.cpp
     src/Gameplay/Player.cpp
@@ -57,14 +73,16 @@ set(PROJECT_FILES
   ${PROJECT_SOURCES}
 )
 
-include_directories(${PROJECT_NAME} PRIVATE include)
+include_directories(${PROJECT_NAME} PRIVATE ${tmxlite_INCLUDE_DIR} include)
 
 add_executable(${PROJECT_NAME} ${PROJECT_FILES})
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE sfml-graphics)
+target_link_libraries(${PROJECT_NAME} PRIVATE sfml-graphics tmxlite)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG_MODE=0)
 
 if(WIN32)
     add_custom_command(

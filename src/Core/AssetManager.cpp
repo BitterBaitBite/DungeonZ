@@ -1,4 +1,5 @@
 #include <Core/AssetManager.h>
+#include <tmxlite/Map.hpp>
 
 AssetManager* AssetManager::_instance { nullptr };
 
@@ -37,4 +38,21 @@ sf::Texture* AssetManager::getTexture(const char* assetPath) const {
     const auto it = _texturePathToTexture.find(assetPath);
 
     return (it != _texturePathToTexture.end()) ? it->second : nullptr;
+}
+
+tmx::Map* AssetManager::loadMap(const char* assetPath) {
+    auto pair = _mapPathToMap.find(assetPath);
+    if (pair != _mapPathToMap.end()) {
+        return pair->second; // Returns the existing map
+    }
+
+    auto newMap = new tmx::Map();
+    const bool loadOk = newMap->load(assetPath);
+    if (!loadOk) {
+        delete newMap;
+        return nullptr; // Returns a null pointer if load error
+    }
+
+    _mapPathToMap[assetPath] = newMap;
+    return newMap; // Returns the new map
 }

@@ -1,8 +1,9 @@
 #pragma once
 
-#include <unordered_set>
+#include <tmxlite/FreeFuncs.hpp>
+#include <tmxlite/Map.hpp>
 
-#include "Gameplay/GameObject.h"
+#include "Gameplay/Dungeon.h"
 #include "Gameplay/Player.h"
 
 class Background;
@@ -12,6 +13,8 @@ class Enemy;
 namespace sf {
     class RenderWindow;
 }
+
+class MapLayer;
 
 class World {
     public:
@@ -24,8 +27,12 @@ class World {
         void render(sf::RenderWindow& window);
 
     private:
-        Background* _background { nullptr };
-        Room* _level01 { nullptr };
-        std::unordered_set<Enemy*> _enemyList { nullptr };
         Player* _player { nullptr };
+        Dungeon* _currentDungeon { nullptr };
+        std::vector<Enemy*> _enemyList;
+
+        // tmxlite
+        // To-Do: This should be in its own class, something like "Level" should work
+        // tmx::Map* _map { nullptr };
+        // std::vector<MapLayer*> _mapLayers;
 };

@@ -1,90 +1,53 @@
 #include "Map/Room.h"
 
-#include <Assets/SpriteSheet.h>
+#include <map>
 
 #include "Core/AssetManager.h"
-#include "Utils/Constants.h"
-
-Room::Room() : _position(sf::Vector2f(0, 0)) {
-    initTiles();
-}
-
-Room::Room(sf::Vector2f position) : _position(position) {
-    initTiles();
-}
-
-void Room::initTiles() {
-    AssetManager* assetManager = AssetManager::getInstance();
-
-    auto foamSprite = new SpriteSheet(SpriteSheet::SheetDescriptor {
-        "../Data/Images/Map/Water/Foam.png",
-        1,
-        8,
-        sf::Vector2i(-TILE_WIDTH, -TILE_HEIGHT),
-        sf::IntRect(0, 0, TILE_WIDTH * 3, TILE_HEIGHT * 3),
-    });
-    sf::Texture* foamTexture = assetManager->loadTexture(foamSprite->getPath());
-
-
-    auto rockBaseSprite = new SpriteSheet(SpriteSheet::SheetDescriptor {
-        "../Data/Images/Map/Tilemap_Flat.png",
-        1,
-        1,
-        sf::Vector2i(0, 0),
-        sf::IntRect(TILE_WIDTH, TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT),
-    });
-    sf::Texture* rockBaseTexture = assetManager->loadTexture(rockBaseSprite->getPath());
-
-    initTile(foamSprite, foamTexture, foamLayer);
-    initTile(rockBaseSprite, rockBaseTexture, groundLayer);
-}
-
-void Room::initTile(SpriteSheet* baseSprite, sf::Texture* foamTexture, Tile* layer[ROOM_ROW_SIZE][ROOM_COL_SIZE]) {
-    for (int i = 0; i < ROOM_ROW_SIZE; i++) {
-        for (int j = 0; j < ROOM_COL_SIZE; j++) {
-            Tile::TileDescriptor tileDescriptor;
-
-            tileDescriptor.texture = foamTexture;
-            tileDescriptor.spriteWidth = baseSprite->getRect().getSize().x;
-            tileDescriptor.spriteHeight = baseSprite->getRect().getSize().y;
-            tileDescriptor.position = sf::Vector2f(_position.x + i * TILE_WIDTH + baseSprite->getOffset().x,
-                                                   _position.y + j * TILE_HEIGHT + baseSprite->getOffset().y);
-
-            auto tile = new Tile();
-            tile->init(tileDescriptor);
-
-            layer[i][j] = tile;
-        }
-    }
-}
+#include "Render/SFMLOrthogonalLayer.h"
+#include "SFML/Graphics/RenderWindow.hpp"
 
 Room::~Room() {
-    for (int i = 0; i < ROOM_ROW_SIZE; i++) {
-        for (int j = 0; j < ROOM_COL_SIZE; j++) {
-            delete foamLayer[i][j];
+    if (_layers.size() > 0) {
+        for (auto layer : _layers) {
+            delete layer;
         }
+        _layers.clear();
     }
 }
 
 
-void Room::render(sf::RenderWindow& window) {
-    for (int i = 0; i < ROOM_ROW_SIZE; i++) {
-        for (int j = 0; j < ROOM_COL_SIZE; j++) {
-            foamLayer[i][j]->render(window);
-        }
-    }
+// // TODO load different maps depending on available doors
+void Room::init() {
+    _map = AssetManager::getInstance()->loadMap("../Data/Maps/DungeonZ_Init.tmx");
 
-    for (int i = 0; i < ROOM_ROW_SIZE; i++) {
-        for (int j = 0; j < ROOM_COL_SIZE; j++) {
-            groundLayer[i][j]->render(window);
+    if (_map == nullptr) return;
+
+    for (int i = 0; i < _map->getLayers().size(); i++) {
+        if (_map->getLayers()[i]->getType() == tmx::Layer::Type::Tile) {
+            _layers.push_back(new MapLayer(*_map, i));
         }
+
+        // TODO get collisions from ObjectLayer 'Collisions'
     }
 }
 
 void Room::update(float deltaMilliseconds) {
-    for (int i = 0; i < ROOM_ROW_SIZE; i++) {
-        for (int j = 0; j < ROOM_COL_SIZE; j++) {
-            foamLayer[i][j]->update(deltaMilliseconds);
+    for (MapLayer* layer : _layers) {
+        if (layer != nullptr) {
+            layer->update(sf::milliseconds(deltaMilliseconds));
         }
     }
+}
+
+void Room::render(sf::RenderWindow& window) {
+    for (MapLayer* layer : _layers) {
+        if (layer != nullptr) {
+            window.draw(*layer);
+        }
+    }
+}
+
+std::string Room::toString(bool current) {
+    if (current) return "[x]";
+    return "[ ]";
 }
