@@ -2,6 +2,7 @@
 #include <tmxlite/Map.hpp>
 
 class MapLayer;
+class ObjectLayer;
 
 namespace sf {
     class RenderWindow;
@@ -19,4 +20,5 @@ class Room {
     private:
         tmx::Map* _map { nullptr };
         std::vector<MapLayer*> _layers;
+        std::vector<ObjectLayer*> _collisionLayers;
 };

@@ -21,7 +21,7 @@ class Game {
 
         ~Game();
 
-        bool init(GameCreateInfo& createInfo);
+        bool init();
 
         bool isRunning() const;
 

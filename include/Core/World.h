@@ -20,19 +20,11 @@ class World {
     public:
         ~World();
 
-        // TO-DO: Ideally the scene should be read from file.
-        bool load(sf::RenderWindow* window);
-
+        bool load();
         void update(uint32_t deltaMilliseconds);
         void render(sf::RenderWindow& window);
 
     private:
         Player* _player { nullptr };
-        Dungeon* _currentDungeon { nullptr };
-        std::vector<Enemy*> _enemyList;
-
-        // tmxlite
-        // To-Do: This should be in its own class, something like "Level" should work
-        // tmx::Map* _map { nullptr };
-        // std::vector<MapLayer*> _mapLayers;
+        Dungeon* _currentDungeon { nullptr }; // Dungeon = Level
 };

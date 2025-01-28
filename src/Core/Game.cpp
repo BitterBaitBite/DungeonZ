@@ -4,13 +4,18 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
-bool Game::init(GameCreateInfo& createInfo) {
+#include "Core/WindowManager.h"
+
+bool Game::init() {
     assert(_window == nullptr && _world == nullptr, "Game is already initialized, we are about to leak memory");
 
-    _window = new sf::RenderWindow({ createInfo.screenWidth, createInfo.screenHeight }, createInfo.gameTitle);
-    _window->setFramerateLimit(createInfo.frameRateLimit);
+    // _window = new sf::RenderWindow({ createInfo.screenWidth, createInfo.screenHeight }, createInfo.gameTitle);
+    // _window->setFramerateLimit(createInfo.frameRateLimit);
+
+    _window = WindowManager::getInstance()->loadWindow();
+
     _world = new World();
-    const bool loadOk = _world->load(_window);
+    const bool loadOk = _world->load(/*_window*/);
 
     return loadOk;
 }

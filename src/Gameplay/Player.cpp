@@ -1,6 +1,9 @@
 #include <Gameplay/Player.h>
 #include <SFML/Graphics/RenderWindow.hpp>
 
+#include "Core/CollisionManager.h"
+#include "Core/DungeonManager.h"
+#include "Core/WindowManager.h"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
@@ -24,6 +27,13 @@ bool Player::init(const PlayerDescriptor& playerDescriptor) {
     _spriteWidth = playerDescriptor.spriteWidth;
     _spriteHeight = playerDescriptor.spriteHeight;
     _sprite.setTextureRect(sf::IntRect(0, 0, _spriteWidth, _spriteHeight));
+
+    _collisionBounds = {
+        playerDescriptor.position.x - TILE_WIDTH / 2,
+        playerDescriptor.position.y - TILE_HEIGHT / 2,
+        TILE_WIDTH,
+        TILE_HEIGHT
+    };
 
     return true;
 }
@@ -69,6 +79,7 @@ void Player::render(sf::RenderWindow& window) {
 }
 
 void Player::debugSprite(sf::RenderWindow& window) {
+    // Global bounds
     const sf::FloatRect spriteBounds = _sprite.getGlobalBounds();
     sf::RectangleShape boundsRect(sf::Vector2f(spriteBounds.width, spriteBounds.height));
 
@@ -77,12 +88,31 @@ void Player::debugSprite(sf::RenderWindow& window) {
     boundsRect.setOutlineThickness(2.f);
     boundsRect.setFillColor(sf::Color::Transparent);
 
+    // Collision bounds
+    sf::RectangleShape collisionRect(sf::Vector2f(_collisionBounds.width, _collisionBounds.height));
+
+    collisionRect.setPosition(_collisionBounds.left, _collisionBounds.top);
+    collisionRect.setOutlineColor(sf::Color::Green);
+    collisionRect.setOutlineThickness(2.f);
+    collisionRect.setFillColor(sf::Color::Transparent);
+
+    // Attack collider
+    sf::RectangleShape attackRect(sf::Vector2f(_attackCollider.width, _attackCollider.height));
+
+    attackRect.setPosition(_attackCollider.left, _attackCollider.top);
+    attackRect.setOutlineColor(sf::Color::Magenta);
+    attackRect.setOutlineThickness(2.f);
+    attackRect.setFillColor(sf::Color::Transparent);
+
     window.draw(boundsRect);
+    window.draw(collisionRect);
+    window.draw(attackRect);
 }
 
 /* PLAYER ATTACK */
 void Player::attack(float deltaMilliseconds) {
     attackAnimation();
+
     _attackTime += deltaMilliseconds;
 }
 
@@ -109,10 +139,16 @@ void Player::getAttackInput() {
         resetAttackAnimation();
         _comboDelayTime = 0.0f;
     }
+
+    _attackCollider = { 0.f, 0.f, 0.f, 0.f };
 }
 
 void Player::attackAnimation() {
     _currentTile.x = FRAMES_PER_SECOND * _attackTime / 1000.0f;
+
+    if (_currentTile.x == 2) {
+        setAttackCollider();
+    }
 
     if (_currentTile.x >= 6) {
         _currentTile.x %= 6;
@@ -125,34 +161,52 @@ void Player::attackAnimation() {
     _currentTile.y = tileColumn;
 }
 
+void Player::setAttackCollider() {
+    sf::Vector2f colliderPos = { _collisionBounds.left, _collisionBounds.top };
+    switch (_faceDirection) {
+        case FaceDirection::Right:
+            colliderPos.x = _collisionBounds.left + TILE_WIDTH;
+            break;
+
+        case FaceDirection::Left:
+            colliderPos.x = _collisionBounds.left - TILE_WIDTH;
+            break;
+
+        case FaceDirection::Up:
+            colliderPos.y = _collisionBounds.top - TILE_HEIGHT;
+            break;
+
+        case FaceDirection::Down:
+            colliderPos.y = _collisionBounds.top + TILE_HEIGHT;
+            break;
+    }
+
+    _attackCollider = sf::FloatRect(colliderPos.x, colliderPos.y, TILE_WIDTH, TILE_HEIGHT);
+}
+
 
 /* PLAYER MOVEMENT */
 void Player::move(float deltaMilliseconds) {
     getMoveInput();
     setFacingDirection();
     setMoveAnimation();
-    setPosition(deltaMilliseconds);
+    setMovePosition(deltaMilliseconds);
 }
 
 void Player::getMoveInput() {
+    _direction = { 0, 0 };
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
         _direction.x = -1.0f;
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
         _direction.x = 1.0f;
-    }
-    else {
-        _direction.x = .0f;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
         _direction.y = -1.0f;
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
         _direction.y = 1.0f;
-    }
-    else {
-        _direction.y = .0f;
     }
 
     _direction = Vector::normalize(_direction);
@@ -194,10 +248,83 @@ void Player::setMoveAnimation() {
     }
 }
 
-void Player::setPosition(float deltaMilliseconds) {
-    // Update final position
-    _position.x += (_direction.x * _speed.x * deltaMilliseconds);
-    _position.y += (_direction.y * _speed.y * deltaMilliseconds);
+void Player::getNextCollisionBounds(sf::Vector2f velocity, sf::FloatRect& nextBounds) {
+    nextBounds = _collisionBounds;
+    nextBounds.left += velocity.x;
+    nextBounds.top += velocity.y;
+}
+
+void Player::setMovePosition(float deltaMilliseconds) {
+    auto velocity = sf::Vector2f(_direction.x * _speed.x * deltaMilliseconds,
+                                 _direction.y * _speed.y * deltaMilliseconds);
+
+    // Warp timer
+    if (_hasWarp) {
+        if (_warpTime >= MAX_WARP_DELAY * 1000.0f) {
+            _hasWarp = false;
+            _warpTime = 0.0f;
+        }
+        else {
+            _warpTime += deltaMilliseconds;
+        }
+    }
+
+    // Check window bounds collisions
+    sf::FloatRect nextCollisionBounds;
+    getNextCollisionBounds(velocity, nextCollisionBounds);
+
+    if (CollisionManager::getInstance()->isOffScreen(nextCollisionBounds)) {
+        if (DungeonManager::getInstance()->moveRoom(nextCollisionBounds)) {
+            _hasWarp = true;
+            WarpPosition();
+        }
+        else {
+            return;
+            // BouncePosition(velocity); // return is cleaner, use bounce only if any action afterwards should be executed
+        }
+    }
+
+    if (CollisionManager::getInstance()->hasObjectCollision(nextCollisionBounds)) {}
+
+    // Update player position
+    _position.x += velocity.x;
+    _position.y += velocity.y;
+
+    // Update collider position
+    _collisionBounds.left += velocity.x;
+    _collisionBounds.top += velocity.y;
 
     _sprite.setPosition(_position);
+}
+
+void Player::WarpPosition() {
+    sf::Vector2u windowSize = WindowManager::getInstance()->getWindowSize();
+    switch (_faceDirection) {
+        case FaceDirection::Right:
+            _position.x = _position.x - windowSize.x + _collisionBounds.width + 5; // CONST WARP_OFFSET
+            _collisionBounds.left = _collisionBounds.left - windowSize.x + _collisionBounds.width + 5;
+            break;
+
+        case FaceDirection::Left:
+            _position.x = _position.x + windowSize.x - _collisionBounds.width - 5;
+            _collisionBounds.left = _collisionBounds.left + windowSize.x - _collisionBounds.width - 5;
+            break;
+
+        case FaceDirection::Up:
+            _position.y = _position.y + windowSize.y - _collisionBounds.height - 5;
+            _collisionBounds.top = _collisionBounds.top + windowSize.y - _collisionBounds.height - 5;
+            break;
+
+        case FaceDirection::Down:
+            _position.y = _position.y - windowSize.y + _collisionBounds.height + 5;
+            _collisionBounds.top = _collisionBounds.top - windowSize.y + _collisionBounds.height + 5;
+            break;
+    }
+}
+
+void Player::BouncePosition(sf::Vector2f velocity) {
+    _position.x -= velocity.x;
+    _position.y -= velocity.y;
+    _collisionBounds.left -= velocity.x;
+    _collisionBounds.top -= velocity.y;
 }

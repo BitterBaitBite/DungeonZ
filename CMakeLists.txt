@@ -12,7 +12,7 @@ FetchContent_Declare(SFML
     GIT_TAG 2.6.x)
 FetchContent_MakeAvailable(SFML)
 
-# Download and add tmxlite (tiled editor loader) as a dependency
+# tmxlite ('Tiled' editor loader)
 FetchContent_Declare(
     TMXLITE
     GIT_REPOSITORY https://github.com/fallahn/tmxlite.git
@@ -33,8 +33,11 @@ set(PROJECT_HEADERS
     include/Utils/Vector.h
 
     include/Core/AssetManager.h
+    include/Core/CollisionManager.h
+    include/Core/DungeonManager.h
     include/Core/SpawnPool.h
     include/Core/Game.h
+    include/Core/WindowManager.h
     include/Core/World.h
 
     include/Map/Background.h
@@ -52,8 +55,11 @@ set(PROJECT_SOURCES
     src/Utils/Vector.cpp
 
     src/Core/AssetManager.cpp
+    src/Core/CollisionManager.cpp
+    src/Core/DungeonManager.cpp
     src/Core/SpawnPool.cpp
     src/Core/Game.cpp
+    src/Core/WindowManager.cpp
     src/Core/World.cpp
 
     src/Map/Background.cpp

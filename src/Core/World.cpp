@@ -6,6 +6,9 @@
 #include <tmxlite/Map.hpp>
 
 #include "Assets/SpriteSheet.h"
+#include "Core/CollisionManager.h"
+#include "Core/DungeonManager.h"
+#include "Core/WindowManager.h"
 #include "Gameplay/Player.h"
 #include "Render/SFMLOrthogonalLayer.h"
 
@@ -17,19 +20,14 @@ World::~World() {
     // delete _enemy;
 }
 
-bool World::load(sf::RenderWindow* window) {
-    constexpr float millisecondsToSeconds = 1 / 1000.f;
+bool World::load() {
+    sf::RenderWindow* window = WindowManager::getInstance()->loadWindow();
     auto windowCenterPosition = sf::Vector2f(window->getSize().x / 2.f, window->getSize().y / 2.f);
 
-    // Tmxlite map test
-    // _map = new tmx::Map();
-    // _map->load("../Data/Maps/DungeonZ_Init.tmx");
-    // for (int i = 0; i < _map->getLayers().size(); i++) {
-    //     if (_map->getLayers().at(i)->getType() == tmx::Layer::Type::Tile) {
-    //         _mapLayers.push_back(new MapLayer(*_map, i));
-    //     }
-    // }
-    _currentDungeon = new Dungeon();
+    constexpr float millisecondsToSeconds = 1 / 1000.f;
+
+    // Load current dungeon (level)
+    _currentDungeon = DungeonManager::getInstance()->loadDungeon();
 
     //----------------- PLAYER TEST ---------------------
     // TO DO read from file
@@ -44,7 +42,7 @@ bool World::load(sf::RenderWindow* window) {
     Player::PlayerDescriptor playerDesc;
     sf::Texture* playerTexture = AssetManager::getInstance()->loadTexture(playerSpriteSheet->getPath());
     playerDesc.texture = playerTexture;
-    playerDesc.position = sf::Vector2f(window->getSize().x / 2, window->getSize().y / 2);
+    playerDesc.position = windowCenterPosition;
     playerDesc.scale = sf::Vector2f(1.f, 1.f);
     playerDesc.speed = { 400.f * millisecondsToSeconds, 400.f * millisecondsToSeconds };
     playerDesc.spriteHeight = (playerDesc.texture->getSize().y / playerSpriteSheet->getRows()) * playerDesc.scale.y;
@@ -58,13 +56,6 @@ bool World::load(sf::RenderWindow* window) {
 }
 
 void World::update(uint32_t deltaMilliseconds) {
-    // Map test
-    // for (MapLayer* layer : _mapLayers) {
-    //     if (layer != nullptr) {
-    //         layer->update(sf::milliseconds(deltaMilliseconds));
-    //     }
-    // }
-
     // Dungeon
     _currentDungeon->update(deltaMilliseconds);
 
@@ -73,13 +64,6 @@ void World::update(uint32_t deltaMilliseconds) {
 }
 
 void World::render(sf::RenderWindow& window) {
-    // Map test
-    // for (MapLayer* layer : _mapLayers) {
-    //     if (layer != nullptr) {
-    //         window.draw(*layer);
-    //     }
-    // }
-
     // Dungeon
     _currentDungeon->render(window);
 

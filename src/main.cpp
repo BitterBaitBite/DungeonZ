@@ -5,15 +5,8 @@
 
 
 int main() {
-    // To-Do: Load game config from file instead of hardcoding values in code
-    Game::GameCreateInfo gameCI;
-    gameCI.gameTitle = GAME_TITLE;
-    gameCI.screenWidth = TILE_WIDTH * BACKGROUND_ROW_SIZE;
-    gameCI.screenHeight = TILE_HEIGHT * BACKGROUND_COL_SIZE;
-    gameCI.frameRateLimit = 60u;
-
     Game game;
-    const bool gameInitialized = game.init(gameCI);
+    const bool gameInitialized = game.init();
 
     if (gameInitialized == false) {
         printf("Game could not be initialized\n");

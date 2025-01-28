@@ -1,6 +1,7 @@
 #include "Map/Room.h"
 
 #include <map>
+#include <map>
 
 #include "Core/AssetManager.h"
 #include "Render/SFMLOrthogonalLayer.h"
@@ -12,6 +13,13 @@ Room::~Room() {
             delete layer;
         }
         _layers.clear();
+    }
+
+    if (_collisionLayers.size() > 0) {
+        for (auto collisionLayer : _collisionLayers) {
+            delete collisionLayer;
+        }
+        _collisionLayers.clear();
     }
 }
 
@@ -26,8 +34,11 @@ void Room::init() {
         if (_map->getLayers()[i]->getType() == tmx::Layer::Type::Tile) {
             _layers.push_back(new MapLayer(*_map, i));
         }
-
-        // TODO get collisions from ObjectLayer 'Collisions'
+        else if (_map->getLayers()[i]->getType() == tmx::Layer::Type::Object) {
+            if (_map->getLayers()[i]->getName() == "Collisions") {
+                _collisionLayers.push_back(new ObjectLayer(*_map, i));
+            }
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 constexpr char* GAME_TITLE = "DungeonZ";
+constexpr uint32_t FRAME_RATE_LIMIT = 60u;
 constexpr int DUNGEON_ROOMS = 10;
 
 constexpr int TILE_WIDTH = 64;

@@ -2,6 +2,7 @@
 
 #include <Gameplay/GameObject.h>
 #include <SFML/Graphics/Sprite.hpp>
+#include <tmxlite/Types.hpp>
 
 #include "Enums/FaceDirection.h"
 
@@ -32,6 +33,7 @@ class Player : public GameObject {
         sf::Vector2f _direction { .0f, .0f };
         float _spriteWidth { .0f };
         float _spriteHeight { .0f };
+        sf::FloatRect _collisionBounds { 0.f, 0.f, 0.f, 0.f };
 
         bool _isDead { false };
         bool _isMoving { false };
@@ -50,19 +52,28 @@ class Player : public GameObject {
         int _attackCounter { 0 };
         float _attackTime { 0.f };
         float _comboDelayTime { 0.0f };
+        sf::FloatRect _attackCollider { 0.f, 0.f, 0.f, 0.f };
 
         void attack(float deltaMilliseconds);
         void resetAttackCounter();
         void resetAttackAnimation();
         void getAttackInput();
         void attackAnimation();
+        void setAttackCollider();
 
         // MOVEMENT
+        const float MAX_WARP_DELAY = 1.5f;
+        float _warpTime { 0.0f };
+        bool _hasWarp { false };
+
         void move(float deltaMilliseconds);
         void getMoveInput();
         void setFacingDirection();
         void setMoveAnimation();
-        void setPosition(float deltaMilliseconds);
+        void getNextCollisionBounds(sf::Vector2f velocity, sf::FloatRect& nextBounds);
+        void BouncePosition(sf::Vector2f velocity);
+        void WarpPosition();
+        void setMovePosition(float deltaMilliseconds);
 
         // ANIMATION
         const int MAX_TILE_FRAMES = 6;
