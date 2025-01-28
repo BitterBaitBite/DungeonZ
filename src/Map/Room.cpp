@@ -23,9 +23,25 @@ Room::~Room() {
     }
 }
 
+void Room::update(float deltaMilliseconds) {
+    for (MapLayer* layer : _layers) {
+        if (layer != nullptr) {
+            layer->update(sf::milliseconds(deltaMilliseconds));
+        }
+    }
+}
 
-// // TODO load different maps depending on available doors
+void Room::render(sf::RenderWindow& window) {
+    for (MapLayer* layer : _layers) {
+        if (layer != nullptr) {
+            window.draw(*layer);
+        }
+    }
+}
+
+// TODO: load different maps depending on available doors
 void Room::init() {
+    // TODO: bit mask for room available exits?
     _map = AssetManager::getInstance()->loadMap("../Data/Maps/DungeonZ_Init.tmx");
 
     if (_map == nullptr) return;
@@ -40,20 +56,21 @@ void Room::init() {
             }
         }
     }
+
+    initObjectColliders();
 }
 
-void Room::update(float deltaMilliseconds) {
-    for (MapLayer* layer : _layers) {
+void Room::initObjectColliders() {
+    std::vector<sf::Shape*> shapes;
+    for (ObjectLayer* layer : _collisionLayers) {
         if (layer != nullptr) {
-            layer->update(sf::milliseconds(deltaMilliseconds));
-        }
-    }
-}
+            shapes = layer->getShapes();
 
-void Room::render(sf::RenderWindow& window) {
-    for (MapLayer* layer : _layers) {
-        if (layer != nullptr) {
-            window.draw(*layer);
+            for (sf::Shape* shape : shapes) {
+                if (shape != nullptr) {
+                    _collisionRects.push_back(shape->getGlobalBounds());
+                }
+            }
         }
     }
 }

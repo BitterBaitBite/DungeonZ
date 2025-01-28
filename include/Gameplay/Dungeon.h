@@ -4,7 +4,7 @@
 #include "SFML/System/Vector2.hpp"
 #include "Utils/Constants.h"
 
-enum class FaceDirection;
+enum class DirectionEnum;
 
 namespace sf {
     class RenderWindow;
@@ -15,15 +15,26 @@ class Dungeon {
         Dungeon();
         ~Dungeon();
 
-        const sf::Vector2i getCurrentRoom() const { return _currentRoom; }
-        void setCurrentRoom(int row, int col);
+        const Room* getCurrentRoom() const {
+            if (_currentRoom.x < 0
+                || _currentRoom.y < 0
+                || _currentRoom.x >= DUNGEON_ROOMS
+                || _currentRoom.y >= DUNGEON_ROOMS
+            ) {
+                return nullptr;
+            }
+
+            return _rooms[_currentRoom.x][_currentRoom.y];
+        }
+
+        const sf::Vector2i getRoomPosition() const { return _currentRoom; }
 
         void init();
         void render(sf::RenderWindow& window);
         void update(float deltaMilliseconds);
 
-        bool moveTo(FaceDirection direction);
-        bool HasAdjacentRoom(FaceDirection direction) const;
+        bool moveTo(DirectionEnum direction);
+        bool HasAdjacentRoom(DirectionEnum direction) const;
         bool HasAdjacentRoom(int row, int col);
         bool HasRoom(int row, int col) const;
 

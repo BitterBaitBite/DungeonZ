@@ -47,12 +47,33 @@ bool World::load() {
     playerDesc.speed = { 400.f * millisecondsToSeconds, 400.f * millisecondsToSeconds };
     playerDesc.spriteHeight = (playerDesc.texture->getSize().y / playerSpriteSheet->getRows()) * playerDesc.scale.y;
     playerDesc.spriteWidth = (playerDesc.texture->getSize().x / playerSpriteSheet->getCols()) * playerDesc.scale.x;
+    playerDesc.maxHealth = 10;
 
     _player = new Player();
     const bool playerOk = _player->init(playerDesc);
+
     //--------------------------------------------------
 
-    return playerOk;
+    SpriteSheet::SheetDescriptor enemySheetDesc;
+    enemySheetDesc.path = "../Data/Images/Enemies/Pawn_Purple.png";
+    enemySheetDesc.rows = 8;
+    enemySheetDesc.cols = 6;
+    auto enemySpriteSheet = new SpriteSheet(enemySheetDesc);
+
+    Enemy::EnemyDescriptor enemyDesc;
+    sf::Texture* enemyTexture = AssetManager::getInstance()->loadTexture(playerSpriteSheet->getPath());
+    enemyDesc.texture = enemyTexture;
+    enemyDesc.position = { windowCenterPosition.x + 2 * TILE_WIDTH, windowCenterPosition.y };
+    enemyDesc.scale = sf::Vector2f(1.f, 1.f);
+    enemyDesc.speed = { 400.f * millisecondsToSeconds, 400.f * millisecondsToSeconds };
+    enemyDesc.spriteHeight = (enemyDesc.texture->getSize().y / playerSpriteSheet->getRows()) * enemyDesc.scale.y;
+    enemyDesc.spriteWidth = (enemyDesc.texture->getSize().x / playerSpriteSheet->getCols()) * enemyDesc.scale.x;
+    enemyDesc.maxHealth = 10;
+
+    _enemy = new Enemy();
+    const bool enemyOk = _enemy->init(playerDesc);
+
+    return playerOk && enemyOk;
 }
 
 void World::update(uint32_t deltaMilliseconds) {

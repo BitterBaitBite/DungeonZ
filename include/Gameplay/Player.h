@@ -1,10 +1,11 @@
 #pragma once
 
+#include <vector>
 #include <Gameplay/GameObject.h>
 #include <SFML/Graphics/Sprite.hpp>
 #include <tmxlite/Types.hpp>
 
-#include "Enums/FaceDirection.h"
+#include "Enums/DirectionEnum.h"
 
 class Player : public GameObject {
     public:
@@ -15,6 +16,8 @@ class Player : public GameObject {
             sf::Texture* texture { nullptr };
             float spriteWidth { .0f };
             float spriteHeight { .0f };
+
+            int maxHealth { 0 };
         };
 
         ~Player() override = default;
@@ -28,27 +31,28 @@ class Player : public GameObject {
         void debugSprite(sf::RenderWindow& window);
 
     private:
-        sf::Sprite _sprite;
+        // Movement
         sf::Vector2f _speed { .0f, .0f };
         sf::Vector2f _direction { .0f, .0f };
-        float _spriteWidth { .0f };
-        float _spriteHeight { .0f };
         sf::FloatRect _collisionBounds { 0.f, 0.f, 0.f, 0.f };
 
-        bool _isDead { false };
-        bool _isMoving { false };
-        bool _isAttacking { false };
-        bool _isColliding { false };
+        // Sprite
+        sf::Sprite _sprite;
+        float _spriteWidth { .0f };
+        float _spriteHeight { .0f };
 
-        FaceDirection _faceDirection { 0 };
-        FaceDirection _lastFaceDirection { 0 }; // TO DO remove if not used
-        FaceDirectionX _faceDirectionX { 0 };
-        FaceDirectionY _faceDirectionY { 0 };
+        // Damageable
+        bool _isDead { false };
+        int _currentHealth { 0 };
+        int _maxHealth { 0 };
+        void addHealth(int amount);
 
         // ATTACK
         const int DEFAULT_TILE_ROW = 2;
         const int MAX_ATTACK_COUNT = 2;
         const float MAX_COMBO_DELAY = 1.0f;
+
+        bool _isAttacking { false };
         int _attackCounter { 0 };
         float _attackTime { 0.f };
         float _comboDelayTime { 0.0f };
@@ -62,9 +66,10 @@ class Player : public GameObject {
         void setAttackCollider();
 
         // MOVEMENT
-        const float MAX_WARP_DELAY = 1.5f;
-        float _warpTime { 0.0f };
-        bool _hasWarp { false };
+        bool _isMoving { false };
+        DirectionEnum _faceDirection { 0 };
+        FaceDirectionX _faceDirectionX { 0 };
+        FaceDirectionY _faceDirectionY { 0 };
 
         void move(float deltaMilliseconds);
         void getMoveInput();
@@ -72,6 +77,7 @@ class Player : public GameObject {
         void setMoveAnimation();
         void getNextCollisionBounds(sf::Vector2f velocity, sf::FloatRect& nextBounds);
         void BouncePosition(sf::Vector2f velocity);
+        void BouncePosition(sf::Vector2f& velocity, std::vector<DirectionEnum> direction);
         void WarpPosition();
         void setMovePosition(float deltaMilliseconds);
 

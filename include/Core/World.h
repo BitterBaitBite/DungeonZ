@@ -26,5 +26,6 @@ class World {
 
     private:
         Player* _player { nullptr };
+        Enemy* _enemy { nullptr };
         Dungeon* _currentDungeon { nullptr }; // Dungeon = Level
 };

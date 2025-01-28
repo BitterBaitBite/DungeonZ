@@ -1,6 +1,6 @@
 #pragma once
 
-enum class FaceDirection {
+enum class DirectionEnum {
     Right,
     Down,
     Up,

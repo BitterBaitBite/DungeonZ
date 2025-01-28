@@ -11,7 +11,7 @@
 #include "Utils/Vector.h"
 
 void Player::setPosition(const sf::Vector2f& newPosition) {
-    _position = newPosition;
+    GameObject::setPosition(newPosition);
     _sprite.setPosition(newPosition);
 }
 
@@ -19,29 +19,32 @@ bool Player::init(const PlayerDescriptor& playerDescriptor) {
     float posX = playerDescriptor.position.x - playerDescriptor.spriteWidth / 2;
     float posY = playerDescriptor.position.y - playerDescriptor.spriteHeight / 2;
     setPosition(sf::Vector2f(posX, posY));
-
-    _sprite.setScale(playerDescriptor.scale);
-    _sprite.setTexture(*playerDescriptor.texture);
     _speed = playerDescriptor.speed;
 
+
+    _sprite.setTexture(*playerDescriptor.texture);
+    _sprite.setScale(playerDescriptor.scale);
     _spriteWidth = playerDescriptor.spriteWidth;
     _spriteHeight = playerDescriptor.spriteHeight;
     _sprite.setTextureRect(sf::IntRect(0, 0, _spriteWidth, _spriteHeight));
 
+    _maxHealth = playerDescriptor.maxHealth;
+    _currentHealth = _maxHealth;
+
     _collisionBounds = {
-        playerDescriptor.position.x - TILE_WIDTH / 2,
-        playerDescriptor.position.y - TILE_HEIGHT / 2,
-        TILE_WIDTH,
-        TILE_HEIGHT
+        playerDescriptor.position.x - TILE_WIDTH / 3,
+        playerDescriptor.position.y,
+        2 * TILE_WIDTH / 3,
+        TILE_HEIGHT / 2
     };
 
     return true;
 }
 
 void Player::update(float deltaMilliseconds) {
-    _time += deltaMilliseconds;
-
     if (_isDead) return;
+
+    _time += deltaMilliseconds;
 
     getAttackInput();
     if (_isAttacking) {
@@ -54,6 +57,9 @@ void Player::update(float deltaMilliseconds) {
 }
 
 void Player::render(sf::RenderWindow& window) {
+    // TODO: render dead sprite
+    if (_isDead) return;
+
     sf::IntRect spriteRect = _sprite.getTextureRect();
     sf::Vector2f tilePosition { _currentTile.x * _spriteWidth, _currentTile.y * _spriteHeight };
 
@@ -156,28 +162,31 @@ void Player::attackAnimation() {
     }
 
     int tileColumn = DEFAULT_TILE_ROW + _attackCounter + 2 * static_cast<int>(_faceDirection);
-    if (_faceDirection == FaceDirection::Left) tileColumn = DEFAULT_TILE_ROW + _attackCounter;
+    if (_faceDirection == DirectionEnum::Left) tileColumn = DEFAULT_TILE_ROW + _attackCounter;
 
     _currentTile.y = tileColumn;
 }
 
 void Player::setAttackCollider() {
-    sf::Vector2f colliderPos = { _collisionBounds.left, _collisionBounds.top };
+    sf::Vector2f colliderPos = {
+        _collisionBounds.left - _collisionBounds.width / 4,
+        _collisionBounds.top - _collisionBounds.height
+    };
     switch (_faceDirection) {
-        case FaceDirection::Right:
-            colliderPos.x = _collisionBounds.left + TILE_WIDTH;
+        case DirectionEnum::Right:
+            colliderPos.x = _collisionBounds.left + _collisionBounds.width;
             break;
 
-        case FaceDirection::Left:
+        case DirectionEnum::Left:
             colliderPos.x = _collisionBounds.left - TILE_WIDTH;
             break;
 
-        case FaceDirection::Up:
+        case DirectionEnum::Up:
             colliderPos.y = _collisionBounds.top - TILE_HEIGHT;
             break;
 
-        case FaceDirection::Down:
-            colliderPos.y = _collisionBounds.top + TILE_HEIGHT;
+        case DirectionEnum::Down:
+            colliderPos.y = _collisionBounds.top + _collisionBounds.height;
             break;
     }
 
@@ -216,22 +225,20 @@ void Player::getMoveInput() {
 }
 
 void Player::setFacingDirection() {
-    _lastFaceDirection = _faceDirection;
-
     if (_direction.x > 0.0f) {
-        _faceDirection = FaceDirection::Right;
+        _faceDirection = DirectionEnum::Right;
         _faceDirectionX = FaceDirectionX::Right;
     }
     else if (_direction.x < 0.0f) {
-        _faceDirection = FaceDirection::Left;
+        _faceDirection = DirectionEnum::Left;
         _faceDirectionX = FaceDirectionX::Left;
     }
     else if (_direction.y > 0.0f) {
-        _faceDirection = FaceDirection::Down;
+        _faceDirection = DirectionEnum::Down;
         _faceDirectionY = FaceDirectionY::Down;
     }
     else if (_direction.y < 0.0f) {
-        _faceDirection = FaceDirection::Up;
+        _faceDirection = DirectionEnum::Up;
         _faceDirectionY = FaceDirectionY::Up;
     }
 }
@@ -258,33 +265,21 @@ void Player::setMovePosition(float deltaMilliseconds) {
     auto velocity = sf::Vector2f(_direction.x * _speed.x * deltaMilliseconds,
                                  _direction.y * _speed.y * deltaMilliseconds);
 
-    // Warp timer
-    if (_hasWarp) {
-        if (_warpTime >= MAX_WARP_DELAY * 1000.0f) {
-            _hasWarp = false;
-            _warpTime = 0.0f;
-        }
-        else {
-            _warpTime += deltaMilliseconds;
-        }
-    }
-
     // Check window bounds collisions
     sf::FloatRect nextCollisionBounds;
     getNextCollisionBounds(velocity, nextCollisionBounds);
 
     if (CollisionManager::getInstance()->isOffScreen(nextCollisionBounds)) {
         if (DungeonManager::getInstance()->moveRoom(nextCollisionBounds)) {
-            _hasWarp = true;
             WarpPosition();
         }
-        else {
-            return;
-            // BouncePosition(velocity); // return is cleaner, use bounce only if any action afterwards should be executed
-        }
+        else return;
     }
 
-    if (CollisionManager::getInstance()->hasObjectCollision(nextCollisionBounds)) {}
+    std::vector<DirectionEnum> collisionDirections;
+    if (CollisionManager::getInstance()->hasObjectCollision(nextCollisionBounds, collisionDirections)) {
+        BouncePosition(velocity, collisionDirections);
+    }
 
     // Update player position
     _position.x += velocity.x;
@@ -300,22 +295,22 @@ void Player::setMovePosition(float deltaMilliseconds) {
 void Player::WarpPosition() {
     sf::Vector2u windowSize = WindowManager::getInstance()->getWindowSize();
     switch (_faceDirection) {
-        case FaceDirection::Right:
+        case DirectionEnum::Right:
             _position.x = _position.x - windowSize.x + _collisionBounds.width + 5; // CONST WARP_OFFSET
             _collisionBounds.left = _collisionBounds.left - windowSize.x + _collisionBounds.width + 5;
             break;
 
-        case FaceDirection::Left:
+        case DirectionEnum::Left:
             _position.x = _position.x + windowSize.x - _collisionBounds.width - 5;
             _collisionBounds.left = _collisionBounds.left + windowSize.x - _collisionBounds.width - 5;
             break;
 
-        case FaceDirection::Up:
+        case DirectionEnum::Up:
             _position.y = _position.y + windowSize.y - _collisionBounds.height - 5;
             _collisionBounds.top = _collisionBounds.top + windowSize.y - _collisionBounds.height - 5;
             break;
 
-        case FaceDirection::Down:
+        case DirectionEnum::Down:
             _position.y = _position.y - windowSize.y + _collisionBounds.height + 5;
             _collisionBounds.top = _collisionBounds.top - windowSize.y + _collisionBounds.height + 5;
             break;
@@ -323,8 +318,37 @@ void Player::WarpPosition() {
 }
 
 void Player::BouncePosition(sf::Vector2f velocity) {
+    // Negate player position
     _position.x -= velocity.x;
     _position.y -= velocity.y;
+
+    // Negate collider position
     _collisionBounds.left -= velocity.x;
     _collisionBounds.top -= velocity.y;
+}
+
+void Player::BouncePosition(sf::Vector2f& velocity, std::vector<DirectionEnum> directions) {
+    for (DirectionEnum direction : directions) {
+        switch (direction) {
+            case DirectionEnum::Right:
+            case DirectionEnum::Left:
+                // _position.x -= velocity.x;
+                // _collisionBounds.left -= velocity.x;
+                // break;
+                velocity.x = 0;
+                break;
+
+            case DirectionEnum::Up:
+            case DirectionEnum::Down:
+                // _position.y -= velocity.y;
+                // _collisionBounds.top -= velocity.y;
+                // break;
+                velocity.y = 0;
+                break;
+        }
+    }
+}
+
+void Player::addHealth(int amount) {
+    _currentHealth = std::clamp(_currentHealth + amount, 0, _maxHealth);
 }

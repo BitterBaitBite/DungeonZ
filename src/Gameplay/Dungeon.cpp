@@ -3,7 +3,8 @@
 #include <iostream>
 #include <random>
 
-#include "Enums/FaceDirection.h"
+#include "Enums/DirectionEnum.h"
+#include "Utils/Random.h"
 
 Dungeon::Dungeon() {
     init();
@@ -17,13 +18,9 @@ Dungeon::~Dungeon() {
     for (int i = 0; i < DUNGEON_ROOMS; i++) {
         for (int j = 0; j < DUNGEON_ROOMS; j++) {
             delete _rooms[i][j];
+            _rooms[i][j] = nullptr;
         }
     }
-}
-
-void Dungeon::setCurrentRoom(int row, int col) {
-    _currentRoom.x = row;
-    _currentRoom.y = col;
 }
 
 void Dungeon::render(sf::RenderWindow& window) {
@@ -43,28 +40,29 @@ void Dungeon::init() {
 }
 
 void Dungeon::GenerateRooms() {
-    // Random uniform distribution in the range of [0, DUNGEON_ROOMS]
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, DUNGEON_ROOMS - 1);
+    for (int roomCount = 0; roomCount < DUNGEON_ROOMS;) {
+        int row = Random::randomInt(0, DUNGEON_ROOMS - 1);
+        int col = Random::randomInt(0, DUNGEON_ROOMS - 1);
 
-    int roomCount = 0;
-    for (int i = 0; i < DUNGEON_ROOMS;) {
-        int row = dis(gen);
-        int col = dis(gen);
-
-        if (i == 0) {
-            roomCount++;
+        if (roomCount == 0) {
             _currentRoom = { row, col };
             _rooms[row][col] = new Room();
-            i++;
+            roomCount++;
         }
         else if (_rooms[row][col] == nullptr && HasAdjacentRoom(row, col)) {
-            roomCount++;
             _rooms[row][col] = new Room();
-            i++;
+            roomCount++;
         }
     }
+
+    int roomCount = 0;
+    for (int i = 0; i < DUNGEON_ROOMS; ++i) {
+        for (int j = 0; j < DUNGEON_ROOMS; ++j) {
+            if (_rooms[i][j] != nullptr) { roomCount++; }
+        }
+    }
+
+    printf("%i\n", roomCount);
 }
 
 void Dungeon::InitializeRooms() {
@@ -78,10 +76,10 @@ void Dungeon::InitializeRooms() {
 }
 
 void Dungeon::DebugDungeon() {
-    std::cout << "----------------------------------" << '\n';
+    std::string dungeonString = "  ----------------------------------\n";
 
     for (int i = 0; i < DUNGEON_ROOMS; i++) {
-        std::string rowString = "| ";
+        std::string rowString = std::to_string(i) + " | ";
 
         for (int j = 0; j < DUNGEON_ROOMS; j++) {
             if (_rooms[i][j] != nullptr) {
@@ -90,23 +88,25 @@ void Dungeon::DebugDungeon() {
             else rowString += "   ";
         }
 
-        std::cout << rowString << " |" << '\n';
+        rowString += " |\n";
+        dungeonString += rowString;
     }
+    dungeonString += "  ----------------------------------\n";
 
-    std::cout << "----------------------------------" << '\n';
+    std::cout << '\n' << dungeonString << '\n';
 }
 
 bool Dungeon::HasAdjacentRoom(int row, int col) {
-    // Has left room
+    // Has top room
     if (row - 1 >= 0 && _rooms[row - 1][col] != nullptr) return true;
 
-    // Has right room
+    // Has bottom room
     if (row + 1 < DUNGEON_ROOMS && _rooms[row + 1][col] != nullptr) return true;
 
-    // Has top room
+    // Has left room
     if ((col - 1 >= 0) && _rooms[row][col - 1] != nullptr) return true;
 
-    // Has bottom room
+    // Has right room
     if (col + 1 < DUNGEON_ROOMS && _rooms[row][col + 1] != nullptr) return true;
 
     return false;
@@ -122,25 +122,25 @@ bool Dungeon::HasRoom(int row, int col) const {
     );
 }
 
-bool Dungeon::HasAdjacentRoom(FaceDirection direction) const {
+bool Dungeon::HasAdjacentRoom(DirectionEnum direction) const {
     switch (direction) {
-        case FaceDirection::Right: {
+        case DirectionEnum::Right: {
             if (_currentRoom.y + 1 < DUNGEON_ROOMS && _rooms[_currentRoom.x][_currentRoom.y + 1] != nullptr)
                 return true;
             return false;
         }
 
-        case FaceDirection::Left: {
+        case DirectionEnum::Left: {
             if (_currentRoom.y - 1 >= 0 && _rooms[_currentRoom.x][_currentRoom.y - 1] != nullptr) return true;
             return false;
         }
 
-        case FaceDirection::Up: {
+        case DirectionEnum::Up: {
             if ((_currentRoom.x - 1 >= 0) && _rooms[_currentRoom.x - 1][_currentRoom.y] != nullptr) return true;
             return false;
         }
 
-        case FaceDirection::Down: {
+        case DirectionEnum::Down: {
             if (_currentRoom.x + 1 < DUNGEON_ROOMS && _rooms[_currentRoom.x + 1][_currentRoom.y] != nullptr)
                 return true;
             return false;
@@ -151,27 +151,27 @@ bool Dungeon::HasAdjacentRoom(FaceDirection direction) const {
     }
 }
 
-bool Dungeon::moveTo(FaceDirection direction) {
+bool Dungeon::moveTo(DirectionEnum direction) {
     switch (direction) {
-        case FaceDirection::Right: {
+        case DirectionEnum::Right: {
             _currentRoom.y += 1;
             DebugDungeon();
             return true;
         }
 
-        case FaceDirection::Left: {
+        case DirectionEnum::Left: {
             _currentRoom.y -= 1;
             DebugDungeon();
             return true;
         }
 
-        case FaceDirection::Up: {
+        case DirectionEnum::Up: {
             _currentRoom.x -= 1;
             DebugDungeon();
             return true;
         }
 
-        case FaceDirection::Down: {
+        case DirectionEnum::Down: {
             _currentRoom.x += 1;
             DebugDungeon();
             return true;

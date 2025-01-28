@@ -2,8 +2,9 @@
 
 #include <tmxlite/Types.hpp>
 
+#include "Core/DungeonManager.h"
 #include "Core/WindowManager.h"
-#include "Enums/FaceDirection.h"
+#include "Enums/DirectionEnum.h"
 
 CollisionManager* CollisionManager::_instance { nullptr };
 
@@ -25,14 +26,51 @@ bool CollisionManager::isOffScreen(sf::FloatRect rect) {
         || rect.top + rect.height > windowSize.y;
 }
 
-FaceDirection CollisionManager::getWindowCollision(sf::FloatRect rect) {
-    sf::Vector2u windowSize = WindowManager::getInstance()->getWindowSize();
+bool CollisionManager::hasObjectCollision(sf::FloatRect rect) {
+    const Room* currentRoom = DungeonManager::getInstance()->getCurrentRoom();
 
-    if (rect.left < 0) return FaceDirection::Left;
+    for (sf::FloatRect collider : currentRoom->getObjectColliders()) {
+        if (rect.intersects(collider)) {
+            return true;
+        }
+    }
 
-    if (rect.top < 0) return FaceDirection::Up;
+    return false;
+}
 
-    if (rect.left + rect.width > windowSize.x) return FaceDirection::Right;
+bool CollisionManager::hasObjectCollision(sf::FloatRect rect, std::vector<DirectionEnum>& directions) {
+    const Room* currentRoom = DungeonManager::getInstance()->getCurrentRoom();
+    std::vector<sf::FloatRect> colliders = currentRoom->getObjectColliders();
 
-    if (rect.top + rect.height > windowSize.y) return FaceDirection::Down;
+    bool hasCollided = false;
+    for (sf::FloatRect collider : colliders) {
+        if (!rect.intersects(collider)) continue;
+
+        if (rect.left < collider.left + collider.width && rect.left + rect.width > collider.left + collider.width) {
+            directions.push_back(DirectionEnum::Left);
+            hasCollided = true;
+        }
+
+        if (rect.top < collider.top + collider.height && rect.top + rect.height > collider.top + collider.height) {
+            directions.push_back(DirectionEnum::Up);
+            hasCollided = true;
+        }
+
+        if (rect.left + rect.width > collider.left && rect.left < collider.left) {
+            directions.push_back(DirectionEnum::Right);
+            hasCollided = true;
+        }
+
+        if (rect.top + rect.height > collider.top && rect.top < collider.top) {
+            directions.push_back(DirectionEnum::Down);
+            hasCollided = true;
+        }
+    }
+
+    return hasCollided;
+}
+
+// TODO
+bool CollisionManager::hasEnemyCollision(sf::FloatRect rect) {
+    return false;
 }

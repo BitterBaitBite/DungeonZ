@@ -15,7 +15,9 @@ class DungeonManager {
     public:
         Dungeon* loadDungeon();
 
-        sf::Vector2i getCurrentRoom() const;
-        bool moveRoom(FaceDirection direction);
+        const sf::Vector2i getRoomPosition() const;
+        const Room* getCurrentRoom() const;
+
+        bool moveRoom(DirectionEnum direction);
         bool moveRoom(sf::FloatRect collider);
 };

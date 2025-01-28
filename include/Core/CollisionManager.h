@@ -2,7 +2,7 @@
 #include "SFML/Graphics/Rect.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 
-enum class FaceDirection;
+enum class DirectionEnum;
 
 class CollisionManager {
     public:
@@ -15,5 +15,7 @@ class CollisionManager {
 
     public:
         bool isOffScreen(sf::FloatRect rect);
-        FaceDirection getWindowCollision(sf::FloatRect rect);
+        bool hasObjectCollision(sf::FloatRect rect);
+        bool hasObjectCollision(sf::FloatRect rect, std::vector<DirectionEnum>& directions);
+        bool hasEnemyCollision(sf::FloatRect rect);
 };

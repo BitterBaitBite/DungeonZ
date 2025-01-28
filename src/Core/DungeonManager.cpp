@@ -1,7 +1,7 @@
 #include "Core/DungeonManager.h"
 
 #include "Core/WindowManager.h"
-#include "Enums/FaceDirection.h"
+#include "Enums/DirectionEnum.h"
 #include "SFML/Graphics/Rect.hpp"
 
 DungeonManager* DungeonManager::_instance { nullptr };
@@ -22,42 +22,44 @@ Dungeon* DungeonManager::loadDungeon() {
     return _dungeon;
 }
 
-sf::Vector2i DungeonManager::getCurrentRoom() const {
+const sf::Vector2i DungeonManager::getRoomPosition() const {
     if (!_dungeon || _dungeon == nullptr) {
         return { 0, 0 };
     }
 
-    return _dungeon->getCurrentRoom();
+    return _dungeon->getRoomPosition();
 }
 
-bool DungeonManager::moveRoom(FaceDirection direction) {
+const Room* DungeonManager::getCurrentRoom() const { return _dungeon->getCurrentRoom(); }
+
+bool DungeonManager::moveRoom(DirectionEnum direction) {
     if (!_dungeon->HasAdjacentRoom(direction)) return false;
 
     return _dungeon->moveTo(direction);
 }
 
 bool DungeonManager::moveRoom(sf::FloatRect collider) {
-    sf::Vector2i currentRoom = getCurrentRoom();
+    sf::Vector2i currentRoom = getRoomPosition();
     sf::Vector2u windowSize = WindowManager::getInstance()->getWindowSize();
 
     // Move left
     if (collider.left < 0 && _dungeon->HasRoom(currentRoom.x, currentRoom.y - 1)) {
-        return _dungeon->moveTo(FaceDirection::Left);
+        return _dungeon->moveTo(DirectionEnum::Left);
     }
 
     // Move right
     if (collider.left + collider.width > windowSize.x && _dungeon->HasRoom(currentRoom.x, currentRoom.y + 1)) {
-        return _dungeon->moveTo(FaceDirection::Right);
+        return _dungeon->moveTo(DirectionEnum::Right);
     }
 
     // Move up
     if (collider.top < 0 && _dungeon->HasRoom(currentRoom.x - 1, currentRoom.y)) {
-        return _dungeon->moveTo(FaceDirection::Up);
+        return _dungeon->moveTo(DirectionEnum::Up);
     }
 
     // Move down
     if (collider.top + collider.height > windowSize.y && _dungeon->HasRoom(currentRoom.x + 1, currentRoom.y)) {
-        return _dungeon->moveTo(FaceDirection::Down);
+        return _dungeon->moveTo(DirectionEnum::Down);
     }
 
     return false;
