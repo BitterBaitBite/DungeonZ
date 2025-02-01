@@ -98,9 +98,8 @@
 0,178,179,0,0,0,0,0,0,0,0,130,131
 </data>
  </layer>
- <group id="9" name="Grupo 1">
-  <layer id="7" name="Capa de patrones 7" width="13" height="11">
-   <data encoding="csv">
+ <layer id="7" name="Capa de patrones 7" width="13" height="11">
+  <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,258,260,0,
 0,0,0,0,0,0,0,0,0,0,262,253,0,
 0,0,0,0,0,0,0,0,0,0,0,257,0,
@@ -113,9 +112,9 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
-  </layer>
-  <layer id="8" name="Capa de patrones 8" width="13" height="11">
-   <data encoding="csv">
+ </layer>
+ <layer id="8" name="Capa de patrones 8" width="13" height="11">
+  <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,83,0,0,
 0,0,0,0,0,0,0,0,0,0,0,83,0,
@@ -128,9 +127,9 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
-  </layer>
-  <layer id="13" name="Capa de patrones 9" width="13" height="11">
-   <data encoding="csv">
+ </layer>
+ <layer id="13" name="Capa de patrones 9" width="13" height="11">
+  <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,78,0,
@@ -143,8 +142,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
-  </layer>
- </group>
+ </layer>
  <objectgroup id="10" name="Walkable" opacity="0">
   <object id="2" x="64" y="64" width="576" height="64"/>
   <object id="3" x="256" y="128" width="320" height="512"/>

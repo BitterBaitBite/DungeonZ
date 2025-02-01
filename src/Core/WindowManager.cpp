@@ -13,8 +13,14 @@ WindowManager* WindowManager::getInstance() {
 
 sf::RenderWindow* WindowManager::loadWindow() {
     if (_window == nullptr) {
-        _window = new sf::RenderWindow({ BACKGROUND_ROW_SIZE * TILE_WIDTH, BACKGROUND_COL_SIZE * TILE_HEIGHT },
-                                       GAME_TITLE);
+        _window = new sf::RenderWindow(
+            {
+                BACKGROUND_ROW_SIZE * TILE_WIDTH,
+                BACKGROUND_COL_SIZE * TILE_HEIGHT
+            },
+            GAME_TITLE
+        );
+
         _window->setFramerateLimit(FRAME_RATE_LIMIT);
     }
 

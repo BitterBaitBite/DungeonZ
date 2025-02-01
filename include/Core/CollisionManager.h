@@ -2,6 +2,8 @@
 #include "SFML/Graphics/Rect.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 
+class Enemy;
+class IDamageable;
 enum class DirectionEnum;
 
 class CollisionManager {
@@ -17,5 +19,6 @@ class CollisionManager {
         bool isOffScreen(sf::FloatRect rect);
         bool hasObjectCollision(sf::FloatRect rect);
         bool hasObjectCollision(sf::FloatRect rect, std::vector<DirectionEnum>& directions);
-        bool hasEnemyCollision(sf::FloatRect rect);
+        bool hasPlayerCollision(sf::FloatRect rect);
+        std::vector<Enemy*> getEnemyCollisions(sf::FloatRect rect);
 };

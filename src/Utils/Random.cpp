@@ -10,6 +10,10 @@ int Random::randomInt(int min, int max) {
     return dis(gen);
 }
 
+int Random::randomIntExc(int min, int max) {
+    return randomInt(min, max - 1);
+}
+
 float Random::randomFloat(float min, float max) {
     std::random_device rd;
     std::mt19937 gen(rd());

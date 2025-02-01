@@ -25,7 +25,7 @@ class World {
         void render(sf::RenderWindow& window);
 
     private:
+        Enemy* _enemyTest { nullptr };
         Player* _player { nullptr };
-        Enemy* _enemy { nullptr };
         Dungeon* _currentDungeon { nullptr }; // Dungeon = Level
 };

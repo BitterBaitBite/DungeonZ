@@ -12,7 +12,13 @@ class SpriteSheet {
             sf::IntRect renderRect;
         };
 
-        SpriteSheet(SheetDescriptor descriptor) : _path(descriptor.path), _rows(descriptor.rows), _cols(descriptor.cols), _offset(descriptor.tileOffset), _rect(descriptor.renderRect) {};
+        SpriteSheet(SheetDescriptor descriptor) :
+            _path(descriptor.path),
+            _rows(descriptor.rows),
+            _cols(descriptor.cols),
+            _offset(descriptor.tileOffset),
+            _rect(descriptor.renderRect) {};
+
         ~SpriteSheet() { delete _path; _path = nullptr; };
 
         int getRows() const { return _rows; }

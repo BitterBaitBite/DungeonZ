@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="left-up" width="13" height="11" tilewidth="64" tileheight="64" infinite="0" nextlayerid="16" nextobjectid="50">
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="left-up" width="13" height="11" tilewidth="64" tileheight="64" infinite="0" nextlayerid="17" nextobjectid="50">
  <tileset firstgid="1" source="../Tilesets/water_base.tsx"/>
  <tileset firstgid="2" source="../Tilesets/water_foam.tsx"/>
  <tileset firstgid="74" source="../Tilesets/grass_terrain.tsx"/>
@@ -8,6 +8,7 @@
  <tileset firstgid="178" source="../Tilesets/water_rocks_02.tsx"/>
  <tileset firstgid="210" source="../Tilesets/water_rocks_01.tsx"/>
  <tileset firstgid="242" source="../Tilesets/rock_terrain.tsx"/>
+ <tileset firstgid="274" source="../Tilesets/props.tsx"/>
  <layer id="1" name="Background" width="13" height="11">
   <data encoding="csv">
 1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -128,9 +129,8 @@
 0,178,179,0,0,0,0,0,0,0,0,130,131
 </data>
  </layer>
- <group id="9" name="Grupo 1">
-  <layer id="7" name="Capa de patrones 7" width="13" height="11">
-   <data encoding="csv">
+ <layer id="7" name="Capa de patrones 7" width="13" height="11">
+  <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -143,9 +143,9 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
-  </layer>
-  <layer id="8" name="Capa de patrones 8" width="13" height="11">
-   <data encoding="csv">
+ </layer>
+ <layer id="8" name="Details" width="13" height="11">
+  <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -158,9 +158,9 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
-  </layer>
-  <layer id="15" name="Capa de patrones 11" width="13" height="11">
-   <data encoding="csv">
+ </layer>
+ <layer id="15" name="UpperRocks" width="13" height="11">
+  <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -173,8 +173,22 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
-  </layer>
- </group>
+ </layer>
+ <layer id="16" name="Props" width="13" height="11">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,284,0,0,0,0,0,0,0,0,288,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,277,0,0,0,
+0,0,0,0,279,0,0,274,0,0,0,0,0,
+0,0,0,0,281,0,0,0,0,0,0,0,0,
+0,0,278,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,283,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
  <objectgroup id="10" name="Walkable" opacity="0">
   <object id="2" x="64" y="64" width="576" height="64"/>
   <object id="3" x="256" y="128" width="320" height="512"/>

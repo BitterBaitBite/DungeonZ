@@ -4,30 +4,32 @@
 #include "Core/CollisionManager.h"
 #include "Core/DungeonManager.h"
 #include "Enums/DirectionEnum.h"
+#include "Gameplay/Player.h"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "Utils/Constants.h"
 #include "Utils/Random.h"
 #include "Utils/Vector.h"
 
-bool Enemy::init(const EnemyDescriptor& enemyDescriptor) {
-    float posX = enemyDescriptor.position.x - enemyDescriptor.spriteWidth / 2;
-    float posY = enemyDescriptor.position.y - enemyDescriptor.spriteHeight / 2;
+bool Enemy::init(EnemyInfo* enemyDescriptor) {
+    float posX = enemyDescriptor->position.x - enemyDescriptor->spriteWidth / 2;
+    float posY = enemyDescriptor->position.y - enemyDescriptor->spriteHeight / 2;
     setPosition(sf::Vector2f(posX, posY));
-    _speed = enemyDescriptor.speed;
+    _speed = enemyDescriptor->speed;
 
 
-    _sprite.setScale(enemyDescriptor.scale);
-    _sprite.setTexture(*enemyDescriptor.texture);
-    _spriteWidth = enemyDescriptor.spriteWidth;
-    _spriteHeight = enemyDescriptor.spriteHeight;
+    _sprite.setScale(enemyDescriptor->scale);
+    _sprite.setTexture(*enemyDescriptor->texture);
     _sprite.setTextureRect(sf::IntRect(0, 0, _spriteWidth, _spriteHeight));
+    _spriteWidth = enemyDescriptor->spriteWidth;
+    _spriteHeight = enemyDescriptor->spriteHeight;
+    _spriteColor = _sprite.getColor();
 
-    _maxHealth = enemyDescriptor.maxHealth;
+    _maxHealth = enemyDescriptor->maxHealth;
     _currentHealth = _maxHealth;
 
-    _collisionBounds = {
-        posX,
-        posY,
+    _enemyCollider = {
+        enemyDescriptor->position.x - TILE_WIDTH / 2,
+        enemyDescriptor->position.y - TILE_HEIGHT / 2,
         TILE_WIDTH,
         TILE_HEIGHT
     };
@@ -38,21 +40,31 @@ bool Enemy::init(const EnemyDescriptor& enemyDescriptor) {
 void Enemy::update(float deltaMilliseconds) {
     if (_isDead) return;
 
-    _time += deltaMilliseconds;
+    // Update target position
+    calcTargetPosition();
 
-    // checkAttackConditions();
-    if (_isAttacking) {
-        attack(deltaMilliseconds);
+    // Check if vulnerable
+    if (_isInvulnerable && _invulnerabilityClock.getElapsedTime().asSeconds() >= INVULNERABILITY_DURATION) {
+        _isInvulnerable = false;
     }
 
-    if (!_isAttacking) {
-        move(deltaMilliseconds);
-    }
+    move(deltaMilliseconds);
+
+    checkPlayerCollision();
 }
 
 void Enemy::render(sf::RenderWindow& window) {
     // TODO: render dead sprite
     if (_isDead) return;
+
+    sf::Color spriteColor = _sprite.getColor();
+    if (_isInvulnerable) {
+        spriteColor.a = INVULNERABLE_ALPHA;
+        _sprite.setColor(spriteColor);
+    }
+    else {
+        _sprite.setColor(_spriteColor);
+    }
 
     sf::IntRect spriteRect = _sprite.getTextureRect();
     sf::Vector2f tilePosition { _currentTile.x * _spriteWidth, _currentTile.y * _spriteHeight };
@@ -89,9 +101,9 @@ void Enemy::debugSprite(sf::RenderWindow& window) {
     boundsRect.setFillColor(sf::Color::Transparent);
 
     // Collision bounds
-    sf::RectangleShape collisionRect(sf::Vector2f(_collisionBounds.width, _collisionBounds.height));
+    sf::RectangleShape collisionRect(sf::Vector2f(_enemyCollider.width, _enemyCollider.height));
 
-    collisionRect.setPosition(_collisionBounds.left, _collisionBounds.top);
+    collisionRect.setPosition(_enemyCollider.left, _enemyCollider.top);
     collisionRect.setOutlineColor(sf::Color::Red);
     collisionRect.setOutlineThickness(2.f);
     collisionRect.setFillColor(sf::Color::Transparent);
@@ -123,36 +135,44 @@ void Enemy::move(float deltaMilliseconds) {
 }
 
 void Enemy::getMoveDirection() {
-    int seconds = _time / 1000;
-    bool isPatrolling = false;
-
     _direction = { 0, 0 };
-    auto direction = static_cast<DirectionEnum>(Random::randomInt(0, 3));
 
-    if (seconds % 3 == 0) {
-        isPatrolling = !isPatrolling;
+    // Patrol delay control
+    if (!_isPatrolling && _patrolDelayClock.getElapsedTime().asSeconds() >= PATROL_DELAY_TIME) {
+        _patrolClock.restart();
+        _isPatrolling = true;
+
+        // TODO: change the random so direction can be a bitmask
+        _faceDirection = static_cast<DirectionEnum>(Random::randomInt(0, 3));
     }
 
-    if (isPatrolling) {
-        if (direction == DirectionEnum::Left) {
+    if (_isPatrolling) {
+        // Patrol movement direction
+        if (_faceDirection == DirectionEnum::Left) {
             _direction.x = -1.0f;
         }
-        if (direction == DirectionEnum::Right) {
+        if (_faceDirection == DirectionEnum::Right) {
             _direction.x = 1.0f;
         }
-
-        if (direction == DirectionEnum::Up) {
+        if (_faceDirection == DirectionEnum::Up) {
             _direction.y = -1.0f;
         }
-        if (direction == DirectionEnum::Down) {
+        if (_faceDirection == DirectionEnum::Down) {
             _direction.y = 1.0f;
+        }
+
+        // Patrol control
+        if (_isPatrolling && _patrolClock.getElapsedTime().asSeconds() >= MAX_PATROL_TIME) {
+            _patrolDelayClock.restart();
+            _isPatrolling = false;
         }
     }
 
     _direction = Vector::normalize(_direction);
 
     float magnitude = Vector::magnitude(_direction);
-    magnitude > 0.0f ? _isMoving = true : _isMoving = false;
+    if (magnitude > 0.0f) _isMoving = true;
+    else _isMoving = false;
 }
 
 void Enemy::setFacingDirection() {
@@ -175,13 +195,14 @@ void Enemy::setFacingDirection() {
 }
 
 void Enemy::setMoveAnimation() {
-    _currentTile.x = FRAMES_PER_SECOND * _time / 1000.0f;
-    _currentTile.x %= MAX_MOVEMENT_TILES;
+    _currentTile.x = FRAMES_PER_SECOND * _animationClock.getElapsedTime().asSeconds();
 
     if (_isMoving) {
+        _currentTile.x %= GetMaxMovementTiles();
         _currentTile.y = RUN_ROW;
     }
     else {
+        _currentTile.x %= GetMaxIdleTiles();
         _currentTile.y = IDLE_ROW;
     }
 }
@@ -208,22 +229,65 @@ void Enemy::setMovePosition(float deltaMilliseconds) {
     _position.y += velocity.y;
 
     // Update collider position
-    _collisionBounds.left += velocity.x;
-    _collisionBounds.top += velocity.y;
+    _enemyCollider.left += velocity.x;
+    _enemyCollider.top += velocity.y;
 
+    // Update sprite position
     _sprite.setPosition(_position);
 }
 
-void Enemy::attack(float deltaMilliseconds) {}
+void Enemy::attack(float deltaMilliseconds) {
+    attackAnimation();
+}
 
 void Enemy::attackAnimation() {}
 
+void Enemy::calcTargetPosition() {
+    _targetPosition = Player::getInstance()->getPosition();
+}
+
+void Enemy::checkPlayerCollision() {
+    if (CollisionManager::getInstance()->hasPlayerCollision(_enemyCollider)) {
+        DoDamage(Player::getDamageable(), _collisionDamage);
+    }
+}
+
 void Enemy::getNextCollisionBounds(sf::Vector2f velocity, sf::FloatRect& nextBounds) {
-    nextBounds = _collisionBounds;
+    nextBounds = _enemyCollider;
     nextBounds.left += velocity.x;
     nextBounds.top += velocity.y;
 }
 
-void Enemy::addHealth(int amount) {
+void Enemy::AddHealth(int amount) {
+    if (_isDead) return;
+
     _currentHealth = std::clamp(_currentHealth + amount, 0, _maxHealth);
+}
+
+int Enemy::GetHealth() const {
+    return _currentHealth;
+}
+
+int Enemy::GetMaxHealth() const {
+    return _maxHealth;
+}
+
+void Enemy::ReceiveDamage(sf::FloatRect otherCollider, int damageAmount) {
+    if (_isDead || _isInvulnerable) return;
+
+    AddHealth(-abs(damageAmount));
+
+    if (_currentHealth == 0) {
+        _isDead = true;
+        return;
+    }
+
+    // TODO: add force depending on 'otherCollider' position
+    _sprite.setColor(_damageColor);
+    _isInvulnerable = true;
+    _invulnerabilityClock.restart();
+}
+
+void Enemy::DoDamage(IDamageable* damageable, int damageAmount) {
+    damageable->ReceiveDamage(_enemyCollider, damageAmount);
 }

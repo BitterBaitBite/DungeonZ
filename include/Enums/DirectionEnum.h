@@ -1,4 +1,6 @@
 #pragma once
+#include <array>
+#include <vector>
 
 enum class DirectionEnum {
     Right,
@@ -15,4 +17,11 @@ enum class FaceDirectionX {
 enum class FaceDirectionY {
     Down,
     Up,
+};
+
+constexpr std::array<DirectionEnum, 4> AllDirections = {
+    DirectionEnum::Right,
+    DirectionEnum::Down,
+    DirectionEnum::Up,
+    DirectionEnum::Left
 };

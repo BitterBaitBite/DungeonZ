@@ -5,6 +5,9 @@
 #include "Core/DungeonManager.h"
 #include "Core/WindowManager.h"
 #include "Enums/DirectionEnum.h"
+#include "Gameplay/Enemy.h"
+#include "Gameplay/Player.h"
+#include "Map/EnemyRoom.h"
 
 CollisionManager* CollisionManager::_instance { nullptr };
 
@@ -71,6 +74,25 @@ bool CollisionManager::hasObjectCollision(sf::FloatRect rect, std::vector<Direct
 }
 
 // TODO
-bool CollisionManager::hasEnemyCollision(sf::FloatRect rect) {
-    return false;
+bool CollisionManager::hasPlayerCollision(sf::FloatRect rect) {
+    return rect.intersects(Player::getInstance()->getCollider());
+}
+
+std::vector<Enemy*> CollisionManager::getEnemyCollisions(sf::FloatRect rect) {
+    std::vector<Enemy*> collidedEnemies;
+
+    Room* currentRoom = DungeonManager::getInstance()->getCurrentRoom();
+    auto room = dynamic_cast<EnemyRoom*>(currentRoom);
+    if (room == nullptr) return collidedEnemies;
+
+    std::vector<Enemy*> activeEnemies = room->getActiveEnemies();
+    for (Enemy* activeEnemy : activeEnemies) {
+        if (activeEnemy == nullptr) continue;
+
+        if (activeEnemy->getCollider().intersects(rect)) {
+            collidedEnemies.push_back(activeEnemy);
+        }
+    }
+
+    return collidedEnemies;
 }

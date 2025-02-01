@@ -25,51 +25,59 @@ set(PROJECT_HEADERS
     include/Render/SFMLOrthogonalLayer.h
     include/UI/UIScreenMainMenu.h
 
-    include/Enums/FaceDirection.h
+    include/Enums/DirectionEnum.h
+    include/Enums/EnemyType.h
+    include/Enums/RoomType.h
 
     include/Interfaces/IDamageable.h
 
     include/Utils/Constants.h
+    include/Utils/Random.h
     include/Utils/Vector.h
 
     include/Core/AssetManager.h
     include/Core/CollisionManager.h
     include/Core/DungeonManager.h
-    include/Core/SpawnPool.h
     include/Core/Game.h
+    include/Core/SpawnPool.h
     include/Core/WindowManager.h
     include/Core/World.h
 
     include/Map/Background.h
+    include/Map/EnemyRoom.h
     include/Map/Room.h
     include/Map/Tile.h
 
     include/Gameplay/Dungeon.h
     include/Gameplay/Enemy.h
     include/Gameplay/GameObject.h
-    include/Gameplay/Villager.h
     include/Gameplay/Player.h
+    include/Gameplay/TNT.h
+    include/Gameplay/Villager.h
 )
 
 set(PROJECT_SOURCES
+    src/Utils/Random.cpp
     src/Utils/Vector.cpp
 
     src/Core/AssetManager.cpp
     src/Core/CollisionManager.cpp
     src/Core/DungeonManager.cpp
-    src/Core/SpawnPool.cpp
     src/Core/Game.cpp
+    src/Core/SpawnPool.cpp
     src/Core/WindowManager.cpp
     src/Core/World.cpp
 
     src/Map/Background.cpp
+    src/Map/EnemyRoom.cpp
     src/Map/Room.cpp
     src/Map/Tile.cpp
 
     src/Gameplay/Dungeon.cpp
     src/Gameplay/Enemy.cpp
-    src/Gameplay/Villager.cpp
     src/Gameplay/Player.cpp
+    src/Gameplay/TNT.cpp
+    src/Gameplay/Villager.cpp
 
     src/main.cpp
 )

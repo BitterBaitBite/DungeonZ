@@ -30,7 +30,7 @@ const sf::Vector2i DungeonManager::getRoomPosition() const {
     return _dungeon->getRoomPosition();
 }
 
-const Room* DungeonManager::getCurrentRoom() const { return _dungeon->getCurrentRoom(); }
+Room* DungeonManager::getCurrentRoom() const { return _dungeon->getCurrentRoom(); }
 
 bool DungeonManager::moveRoom(DirectionEnum direction) {
     if (!_dungeon->HasAdjacentRoom(direction)) return false;
@@ -63,4 +63,43 @@ bool DungeonManager::moveRoom(sf::FloatRect collider) {
     }
 
     return false;
+}
+
+std::array<std::array<bool, BACKGROUND_ROW_SIZE>, BACKGROUND_COL_SIZE> DungeonManager::getRoomCostGrid() {
+    std::array<std::array<bool, BACKGROUND_ROW_SIZE>, BACKGROUND_COL_SIZE> collisionGrid;
+
+    std::vector<sf::FloatRect> roomCollisions = _dungeon->getCurrentRoom()->getObjectColliders();
+
+    for (int i = 0; i < BACKGROUND_COL_SIZE; i++) {
+        for (int j = 0; j < BACKGROUND_ROW_SIZE; j++) {
+            collisionGrid[i][j] = false;
+
+            for (sf::FloatRect& collider : roomCollisions) {
+                if (collider.contains(j * TILE_WIDTH + TILE_WIDTH / 2, i * TILE_HEIGHT + TILE_HEIGHT / 2)) {
+                    collisionGrid[i][j] = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    // debugCollisionGrid(collisionGrid);
+
+    return collisionGrid;
+}
+
+void DungeonManager::debugCollisionGrid(
+    std::array<std::array<bool, BACKGROUND_ROW_SIZE>, BACKGROUND_COL_SIZE>& collisionGrid) const {
+    std::string debugCollisionGrid = "--------------------------------------------\n";
+    for (int i = 0; i < BACKGROUND_COL_SIZE; i++) {
+        debugCollisionGrid += "| ";
+        for (int j = 0; j < BACKGROUND_ROW_SIZE; j++) {
+            debugCollisionGrid += " [";
+            debugCollisionGrid += (collisionGrid[i][j] ? "1" : "0");
+            debugCollisionGrid += "] ";
+        }
+        debugCollisionGrid += " |\n";
+    }
+    debugCollisionGrid += "--------------------------------------------\n";
+    printf("%s\n", debugCollisionGrid.c_str());
 }

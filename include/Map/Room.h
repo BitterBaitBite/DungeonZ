@@ -1,6 +1,9 @@
 #pragma once
+#include <bitset>
+#include <vector>
 #include <tmxlite/Map.hpp>
 
+#include "Enums/DirectionEnum.h"
 #include "SFML/Graphics/Rect.hpp"
 
 class MapLayer;
@@ -12,13 +15,15 @@ namespace sf {
 
 class Room {
     public:
-        ~Room();
+        virtual ~Room();
 
-        void init();
-        void update(float deltaMilliseconds);
-        void render(sf::RenderWindow& window);
+        virtual void init(std::vector<DirectionEnum> adjacentRooms);
+        std::bitset<4> getDirectionsMask(std::vector<DirectionEnum> directions);
+        const char* getRoomMapPath(std::vector<DirectionEnum> availableRooms);
+        virtual void update(float deltaMilliseconds);
+        virtual void render(sf::RenderWindow& window);
 
-    private:
+    protected:
         tmx::Map* _map { nullptr };
         std::vector<MapLayer*> _layers;
         std::vector<ObjectLayer*> _collisionLayers;

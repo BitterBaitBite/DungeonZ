@@ -4,51 +4,79 @@
 #include "Core/CollisionManager.h"
 #include "Core/DungeonManager.h"
 #include "Core/WindowManager.h"
+#include "Gameplay/Enemy.h"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
 #include "Utils/Constants.h"
 #include "Utils/Vector.h"
 
+Player* Player::_instance { nullptr };
+
+Player* Player::getInstance() {
+    if (_instance == nullptr) {
+        _instance = new Player();
+    }
+
+    return _instance;
+}
+
+IDamageable* Player::getDamageable() {
+    if (_instance == nullptr) {
+        _instance = new Player();
+    }
+
+    return _instance;
+}
+
 void Player::setPosition(const sf::Vector2f& newPosition) {
     GameObject::setPosition(newPosition);
     _sprite.setPosition(newPosition);
 }
 
-bool Player::init(const PlayerDescriptor& playerDescriptor) {
+bool Player::init(const PlayerInfo& playerDescriptor) {
     float posX = playerDescriptor.position.x - playerDescriptor.spriteWidth / 2;
     float posY = playerDescriptor.position.y - playerDescriptor.spriteHeight / 2;
     setPosition(sf::Vector2f(posX, posY));
     _speed = playerDescriptor.speed;
 
-
     _sprite.setTexture(*playerDescriptor.texture);
+    _sprite.setTextureRect(sf::IntRect(0, 0, _spriteWidth, _spriteHeight));
     _sprite.setScale(playerDescriptor.scale);
     _spriteWidth = playerDescriptor.spriteWidth;
     _spriteHeight = playerDescriptor.spriteHeight;
-    _sprite.setTextureRect(sf::IntRect(0, 0, _spriteWidth, _spriteHeight));
+    _spriteColor = _sprite.getColor();
 
     _maxHealth = playerDescriptor.maxHealth;
     _currentHealth = _maxHealth;
 
-    _collisionBounds = {
+    _playerCollider = {
         playerDescriptor.position.x - TILE_WIDTH / 3,
         playerDescriptor.position.y,
         2 * TILE_WIDTH / 3,
         TILE_HEIGHT / 2
     };
 
+    for (int i = 0; i < ATTACK_COMBO_COUNT; i++) {
+        _attackDamage[i] = BASE_ATTACK_DAMAGE + i * ATTACK_DAMAGE_MULTIPLIER;
+    }
+
     return true;
 }
 
 void Player::update(float deltaMilliseconds) {
+    // debugHealth();
+
     if (_isDead) return;
 
-    _time += deltaMilliseconds;
+    // Check if vulnerable
+    if (_isInvulnerable && _invulnerabilityClock.getElapsedTime().asSeconds() >= INVULNERABILITY_DURATION) {
+        _isInvulnerable = false;
+    }
 
     getAttackInput();
     if (_isAttacking) {
-        attack(deltaMilliseconds);
+        attack();
     }
 
     if (!_isAttacking) {
@@ -59,6 +87,15 @@ void Player::update(float deltaMilliseconds) {
 void Player::render(sf::RenderWindow& window) {
     // TODO: render dead sprite
     if (_isDead) return;
+
+    sf::Color spriteColor = _sprite.getColor();
+    if (_isInvulnerable) {
+        spriteColor.a = INVULNERABLE_ALPHA;
+        _sprite.setColor(spriteColor);
+    }
+    else {
+        _sprite.setColor(_spriteColor);
+    }
 
     sf::IntRect spriteRect = _sprite.getTextureRect();
     sf::Vector2f tilePosition { _currentTile.x * _spriteWidth, _currentTile.y * _spriteHeight };
@@ -95,9 +132,9 @@ void Player::debugSprite(sf::RenderWindow& window) {
     boundsRect.setFillColor(sf::Color::Transparent);
 
     // Collision bounds
-    sf::RectangleShape collisionRect(sf::Vector2f(_collisionBounds.width, _collisionBounds.height));
+    sf::RectangleShape collisionRect(sf::Vector2f(_playerCollider.width, _playerCollider.height));
 
-    collisionRect.setPosition(_collisionBounds.left, _collisionBounds.top);
+    collisionRect.setPosition(_playerCollider.left, _playerCollider.top);
     collisionRect.setOutlineColor(sf::Color::Green);
     collisionRect.setOutlineThickness(2.f);
     collisionRect.setFillColor(sf::Color::Transparent);
@@ -115,18 +152,25 @@ void Player::debugSprite(sf::RenderWindow& window) {
     window.draw(attackRect);
 }
 
-/* PLAYER ATTACK */
-void Player::attack(float deltaMilliseconds) {
-    attackAnimation();
+void Player::debugHealth() {
+    printf("%i/%i\n", _currentHealth, _maxHealth);
+}
 
-    _attackTime += deltaMilliseconds;
+/* PLAYER ATTACK */
+void Player::attack() {
+    bool finishedAnimation = attackAnimation();
+    checkAttackCollisions();
+
+    if (finishedAnimation) {
+        _attackCounter++;
+    }
 }
 
 void Player::resetAttackCounter() { _attackCounter = 0; }
 
 void Player::resetAttackAnimation() {
     _currentTile.x = 0;
-    _attackTime = 0.0f;
+    _attackAnimationClock.restart();
 }
 
 void Player::getAttackInput() {
@@ -134,23 +178,23 @@ void Player::getAttackInput() {
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
         _isAttacking = true;
-        _comboDelayTime = _time;
+        _comboDelayClock.restart();
 
-        if (++_attackCounter >= MAX_ATTACK_COUNT) resetAttackCounter();
+        if (_attackCounter >= ATTACK_COMBO_COUNT) resetAttackCounter();
 
         resetAttackAnimation();
     }
-    else if (_comboDelayTime > 0 && _time - _comboDelayTime > MAX_COMBO_DELAY * 1000.0f) {
+    else if (_comboDelayClock.getElapsedTime().asSeconds() > COMBO_DELAY_TIME) {
         resetAttackCounter();
         resetAttackAnimation();
-        _comboDelayTime = 0.0f;
     }
 
     _attackCollider = { 0.f, 0.f, 0.f, 0.f };
 }
 
-void Player::attackAnimation() {
-    _currentTile.x = FRAMES_PER_SECOND * _attackTime / 1000.0f;
+bool Player::attackAnimation() {
+    bool animationFinished = false;
+    _currentTile.x = FRAMES_PER_SECOND * _attackAnimationClock.getElapsedTime().asSeconds();
 
     if (_currentTile.x == 2) {
         setAttackCollider();
@@ -159,40 +203,63 @@ void Player::attackAnimation() {
     if (_currentTile.x >= 6) {
         _currentTile.x %= 6;
         _isAttacking = false;
+        animationFinished = true;
     }
 
     int tileColumn = DEFAULT_TILE_ROW + _attackCounter + 2 * static_cast<int>(_faceDirection);
     if (_faceDirection == DirectionEnum::Left) tileColumn = DEFAULT_TILE_ROW + _attackCounter;
 
     _currentTile.y = tileColumn;
+
+    return animationFinished;
 }
 
 void Player::setAttackCollider() {
-    sf::Vector2f colliderPos = {
-        _collisionBounds.left - _collisionBounds.width / 4,
-        _collisionBounds.top - _collisionBounds.height
+    sf::FloatRect attackColliderRect = {
+        _playerCollider.left - _playerCollider.width / 4 - TILE_WIDTH / 2,
+        _playerCollider.top - _playerCollider.height - TILE_HEIGHT / 2,
+        TILE_WIDTH,
+        TILE_HEIGHT,
     };
+
     switch (_faceDirection) {
         case DirectionEnum::Right:
-            colliderPos.x = _collisionBounds.left + _collisionBounds.width;
+            attackColliderRect.left = _playerCollider.left + _playerCollider.width;
+            attackColliderRect.height *= 2;
             break;
 
         case DirectionEnum::Left:
-            colliderPos.x = _collisionBounds.left - TILE_WIDTH;
+            attackColliderRect.left = _playerCollider.left - TILE_WIDTH;
+            attackColliderRect.height *= 2;
             break;
 
         case DirectionEnum::Up:
-            colliderPos.y = _collisionBounds.top - TILE_HEIGHT;
+            attackColliderRect.top = _playerCollider.top - TILE_HEIGHT;
+            attackColliderRect.width *= 2;
             break;
 
         case DirectionEnum::Down:
-            colliderPos.y = _collisionBounds.top + _collisionBounds.height;
+            attackColliderRect.top = _playerCollider.top + _playerCollider.height;
+            attackColliderRect.width *= 2;
             break;
     }
 
-    _attackCollider = sf::FloatRect(colliderPos.x, colliderPos.y, TILE_WIDTH, TILE_HEIGHT);
+    _attackCollider = attackColliderRect;
 }
 
+void Player::checkAttackCollisions() {
+    std::vector<Enemy*> collidedEnemies = CollisionManager::getInstance()->getEnemyCollisions(_attackCollider);
+
+    for (Enemy* enemy : collidedEnemies) {
+        if (enemy == nullptr) continue;
+
+        DoDamage(enemy, _attackDamage[_attackCounter]);
+    }
+}
+
+void Player::DoDamage(IDamageable* damageable, int damageAmount) {
+    damageable->ReceiveDamage(_attackCollider, damageAmount);
+}
 
 /* PLAYER MOVEMENT */
 void Player::move(float deltaMilliseconds) {
@@ -244,19 +311,19 @@ void Player::setFacingDirection() {
 }
 
 void Player::setMoveAnimation() {
-    _currentTile.x = FRAMES_PER_SECOND * _time / 1000.0f;
+    _currentTile.x = FRAMES_PER_SECOND * _animationClock.getElapsedTime().asSeconds();
     _currentTile.x %= MAX_TILE_FRAMES;
 
     if (_isMoving) {
-        _currentTile.y = 1;
+        _currentTile.y = RUN_ROW;
     }
     else {
-        _currentTile.y = 0;
+        _currentTile.y = IDLE_ROW;
     }
 }
 
 void Player::getNextCollisionBounds(sf::Vector2f velocity, sf::FloatRect& nextBounds) {
-    nextBounds = _collisionBounds;
+    nextBounds = _playerCollider;
     nextBounds.left += velocity.x;
     nextBounds.top += velocity.y;
 }
@@ -286,8 +353,8 @@ void Player::setMovePosition(float deltaMilliseconds) {
     _position.y += velocity.y;
 
     // Update collider position
-    _collisionBounds.left += velocity.x;
-    _collisionBounds.top += velocity.y;
+    _playerCollider.left += velocity.x;
+    _playerCollider.top += velocity.y;
 
     _sprite.setPosition(_position);
 }
@@ -296,23 +363,23 @@ void Player::WarpPosition() {
     sf::Vector2u windowSize = WindowManager::getInstance()->getWindowSize();
     switch (_faceDirection) {
         case DirectionEnum::Right:
-            _position.x = _position.x - windowSize.x + _collisionBounds.width + 5; // CONST WARP_OFFSET
-            _collisionBounds.left = _collisionBounds.left - windowSize.x + _collisionBounds.width + 5;
+            _position.x = _position.x - windowSize.x + _playerCollider.width + 5; // CONST WARP_OFFSET
+            _playerCollider.left = _playerCollider.left - windowSize.x + _playerCollider.width + 5;
             break;
 
         case DirectionEnum::Left:
-            _position.x = _position.x + windowSize.x - _collisionBounds.width - 5;
-            _collisionBounds.left = _collisionBounds.left + windowSize.x - _collisionBounds.width - 5;
+            _position.x = _position.x + windowSize.x - _playerCollider.width - 5;
+            _playerCollider.left = _playerCollider.left + windowSize.x - _playerCollider.width - 5;
             break;
 
         case DirectionEnum::Up:
-            _position.y = _position.y + windowSize.y - _collisionBounds.height - 5;
-            _collisionBounds.top = _collisionBounds.top + windowSize.y - _collisionBounds.height - 5;
+            _position.y = _position.y + windowSize.y - _playerCollider.height - 5;
+            _playerCollider.top = _playerCollider.top + windowSize.y - _playerCollider.height - 5;
             break;
 
         case DirectionEnum::Down:
-            _position.y = _position.y - windowSize.y + _collisionBounds.height + 5;
-            _collisionBounds.top = _collisionBounds.top - windowSize.y + _collisionBounds.height + 5;
+            _position.y = _position.y - windowSize.y + _playerCollider.height + 5;
+            _playerCollider.top = _playerCollider.top - windowSize.y + _playerCollider.height + 5;
             break;
     }
 }
@@ -323,8 +390,8 @@ void Player::BouncePosition(sf::Vector2f velocity) {
     _position.y -= velocity.y;
 
     // Negate collider position
-    _collisionBounds.left -= velocity.x;
-    _collisionBounds.top -= velocity.y;
+    _playerCollider.left -= velocity.x;
+    _playerCollider.top -= velocity.y;
 }
 
 void Player::BouncePosition(sf::Vector2f& velocity, std::vector<DirectionEnum> directions) {
@@ -333,7 +400,7 @@ void Player::BouncePosition(sf::Vector2f& velocity, std::vector<DirectionEnum> d
             case DirectionEnum::Right:
             case DirectionEnum::Left:
                 // _position.x -= velocity.x;
-                // _collisionBounds.left -= velocity.x;
+                // _playerCollider.left -= velocity.x;
                 // break;
                 velocity.x = 0;
                 break;
@@ -341,7 +408,7 @@ void Player::BouncePosition(sf::Vector2f& velocity, std::vector<DirectionEnum> d
             case DirectionEnum::Up:
             case DirectionEnum::Down:
                 // _position.y -= velocity.y;
-                // _collisionBounds.top -= velocity.y;
+                // _playerCollider.top -= velocity.y;
                 // break;
                 velocity.y = 0;
                 break;
@@ -349,6 +416,33 @@ void Player::BouncePosition(sf::Vector2f& velocity, std::vector<DirectionEnum> d
     }
 }
 
-void Player::addHealth(int amount) {
+void Player::AddHealth(int amount) {
+    if (_isDead) return;
+
     _currentHealth = std::clamp(_currentHealth + amount, 0, _maxHealth);
+}
+
+int Player::GetHealth() const {
+    return _currentHealth;
+}
+
+int Player::GetMaxHealth() const {
+    return _maxHealth;
+}
+
+void Player::ReceiveDamage(sf::FloatRect otherCollider, int damageAmount) {
+    if (_isDead || _isInvulnerable) return;
+
+    AddHealth(-abs(damageAmount));
+
+    if (_currentHealth == 0) {
+        _isDead = true;
+        return;
+    }
+
+    // TODO: add force depending on 'otherCollider' position
+
+    _sprite.setColor(_damageColor);
+    _isInvulnerable = true;
+    _invulnerabilityClock.restart();
 }

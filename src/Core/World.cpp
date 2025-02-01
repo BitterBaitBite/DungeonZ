@@ -1,36 +1,32 @@
 #include <map>
 #include <Core/AssetManager.h>
 #include <Core/World.h>
-#include <Gameplay/Villager.h>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <tmxlite/Map.hpp>
 
 #include "Assets/SpriteSheet.h"
-#include "Core/CollisionManager.h"
 #include "Core/DungeonManager.h"
 #include "Core/WindowManager.h"
 #include "Gameplay/Player.h"
+#include "Gameplay/Villager.h"
 #include "Render/SFMLOrthogonalLayer.h"
 
 World::~World() {
+    delete _enemyTest;
     delete _player;
     delete _currentDungeon;
-    // delete _map;
-    // delete _level01;
-    // delete _enemy;
 }
 
 bool World::load() {
     sf::RenderWindow* window = WindowManager::getInstance()->loadWindow();
     auto windowCenterPosition = sf::Vector2f(window->getSize().x / 2.f, window->getSize().y / 2.f);
 
-    constexpr float millisecondsToSeconds = 1 / 1000.f;
 
     // Load current dungeon (level)
     _currentDungeon = DungeonManager::getInstance()->loadDungeon();
 
-    //----------------- PLAYER TEST ---------------------
-    // TO DO read from file
+    // //----------------- PLAYER TEST ---------------------
+    // // TO DO read from file
     // Player texture data: (texture path, rows, cols)
     SpriteSheet::SheetDescriptor playerSheetDesc;
     playerSheetDesc.path = "../Data/Images/Player/Warrior_Blue.png";
@@ -39,41 +35,42 @@ bool World::load() {
     auto playerSpriteSheet = new SpriteSheet(playerSheetDesc);
 
     // Player object data: (texture
-    Player::PlayerDescriptor playerDesc;
+    Player::PlayerInfo playerDesc;
     sf::Texture* playerTexture = AssetManager::getInstance()->loadTexture(playerSpriteSheet->getPath());
     playerDesc.texture = playerTexture;
     playerDesc.position = windowCenterPosition;
-    playerDesc.scale = sf::Vector2f(1.f, 1.f);
-    playerDesc.speed = { 400.f * millisecondsToSeconds, 400.f * millisecondsToSeconds };
+    playerDesc.speed = { 400.f * MILLISECONDS_TO_SECONDS, 400.f * MILLISECONDS_TO_SECONDS };
     playerDesc.spriteHeight = (playerDesc.texture->getSize().y / playerSpriteSheet->getRows()) * playerDesc.scale.y;
     playerDesc.spriteWidth = (playerDesc.texture->getSize().x / playerSpriteSheet->getCols()) * playerDesc.scale.x;
     playerDesc.maxHealth = 10;
 
-    _player = new Player();
-    const bool playerOk = _player->init(playerDesc);
-
+    const bool playerOk = Player::getInstance()->init(playerDesc);
     //--------------------------------------------------
 
+    // Enemy test --------------------------->
     SpriteSheet::SheetDescriptor enemySheetDesc;
-    enemySheetDesc.path = "../Data/Images/Enemies/Pawn_Purple.png";
-    enemySheetDesc.rows = 8;
+    enemySheetDesc.path = "../Data/Images/Enemies/Pawn_Red.png";
+    enemySheetDesc.rows = 6;
     enemySheetDesc.cols = 6;
     auto enemySpriteSheet = new SpriteSheet(enemySheetDesc);
 
-    Enemy::EnemyDescriptor enemyDesc;
-    sf::Texture* enemyTexture = AssetManager::getInstance()->loadTexture(playerSpriteSheet->getPath());
-    enemyDesc.texture = enemyTexture;
-    enemyDesc.position = { windowCenterPosition.x + 2 * TILE_WIDTH, windowCenterPosition.y };
-    enemyDesc.scale = sf::Vector2f(1.f, 1.f);
-    enemyDesc.speed = { 400.f * millisecondsToSeconds, 400.f * millisecondsToSeconds };
-    enemyDesc.spriteHeight = (enemyDesc.texture->getSize().y / playerSpriteSheet->getRows()) * enemyDesc.scale.y;
-    enemyDesc.spriteWidth = (enemyDesc.texture->getSize().x / playerSpriteSheet->getCols()) * enemyDesc.scale.x;
-    enemyDesc.maxHealth = 10;
+    Villager::VillagerInfo villagerInfo;
+    sf::Texture* enemyTexture = AssetManager::getInstance()->loadTexture(enemySpriteSheet->getPath());
+    villagerInfo.texture = enemyTexture;
+    villagerInfo.speed = { 100.f * MILLISECONDS_TO_SECONDS, 100.f * MILLISECONDS_TO_SECONDS };
+    villagerInfo.position = { windowCenterPosition.x - TILE_WIDTH * 2, windowCenterPosition.y };
+    villagerInfo.spriteHeight = villagerInfo.texture->getSize().y / enemySpriteSheet->getRows() * villagerInfo.scale.y;
+    villagerInfo.spriteWidth = villagerInfo.texture->getSize().x / enemySpriteSheet->getCols() * villagerInfo.scale.x;
+    villagerInfo.maxHealth = 3;
+    villagerInfo.attackDamage = 2;
+    _enemyTest = new Villager();
+    bool enemyOk = _enemyTest->init(&villagerInfo);
 
-    _enemy = new Enemy();
-    const bool enemyOk = _enemy->init(playerDesc);
+    // <------------------------ End enemy test
 
-    return playerOk && enemyOk;
+
+    return enemyOk && playerOk;
+    // return playerOk;
 }
 
 void World::update(uint32_t deltaMilliseconds) {
@@ -81,7 +78,9 @@ void World::update(uint32_t deltaMilliseconds) {
     _currentDungeon->update(deltaMilliseconds);
 
     // Player
-    _player->update(deltaMilliseconds);
+    Player::getInstance()->update(deltaMilliseconds);
+
+    _enemyTest->update(deltaMilliseconds);
 }
 
 void World::render(sf::RenderWindow& window) {
@@ -89,5 +88,7 @@ void World::render(sf::RenderWindow& window) {
     _currentDungeon->render(window);
 
     // Player
-    _player->render(window);
+    Player::getInstance()->render(window);
+
+    _enemyTest->render(window);
 }

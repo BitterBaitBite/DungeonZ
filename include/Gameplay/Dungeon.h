@@ -15,7 +15,7 @@ class Dungeon {
         Dungeon();
         ~Dungeon();
 
-        const Room* getCurrentRoom() const {
+        Room* getCurrentRoom() const {
             if (_currentRoom.x < 0
                 || _currentRoom.y < 0
                 || _currentRoom.x >= DUNGEON_ROOMS
@@ -33,10 +33,12 @@ class Dungeon {
         void render(sf::RenderWindow& window);
         void update(float deltaMilliseconds);
 
-        bool moveTo(DirectionEnum direction);
-        bool HasAdjacentRoom(DirectionEnum direction) const;
-        bool HasAdjacentRoom(int row, int col);
         bool HasRoom(int row, int col) const;
+        bool HasAdjacentRoom(int row, int col);
+        bool HasAdjacentRoom(DirectionEnum direction) const;
+        bool HasAdjacentRoom(int row, int col, DirectionEnum direction) const;
+        std::vector<DirectionEnum> GetAdjacentRooms(int row, int col) const;
+        bool moveTo(DirectionEnum direction);
 
     private:
         sf::Vector2i _currentRoom { 0, 0 };
