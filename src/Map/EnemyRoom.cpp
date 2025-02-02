@@ -170,7 +170,7 @@ TorchGoblin::TorchGoblinInfo* EnemyRoom::getTorchGoblinInfo() {
     enemySheetDesc.cols = 7;
     auto enemySpriteSheet = new SpriteSheet(enemySheetDesc);
 
-    TorchGoblin::TorchGoblinInfo* torchGoblinInfo;
+    auto torchGoblinInfo = new TorchGoblin::TorchGoblinInfo();
     sf::Texture* enemyTexture = AssetManager::getInstance()->loadTexture(enemySpriteSheet->getPath());
     torchGoblinInfo->texture = enemyTexture;
     torchGoblinInfo->speed = { 80.f * MILLISECONDS_TO_SECONDS, 80.f * MILLISECONDS_TO_SECONDS };

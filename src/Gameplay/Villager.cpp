@@ -55,9 +55,7 @@ bool Villager::attackAnimation() {
         animationFinished = true;
     }
 
-    // int tileColumn = D_SPRITE_ATTACK_ROW + static_cast<int>(_faceDirectionX);
-    int tileColumn = D_SPRITE_ATTACK_ROW + Random::randomInt(0, 1);
-    if (_faceDirectionX == DirectionX::Left) tileColumn = D_SPRITE_ATTACK_ROW;
+    int tileColumn = D_SPRITE_ATTACK_ROW + ATTACK_TYPE;
 
     _currentTile.y = tileColumn;
 
@@ -92,7 +90,7 @@ void Villager::setAttackCollider() {
 
 void Villager::checkAttackCollisions() {
     if (CollisionManager::getInstance()->hasPlayerCollision(_attackCollider)) {
-        DoDamage(Player::getInstance(), _attackDamage);
+        DoDamage(Player::getInstance(), _attackDamage + ATTACK_TYPE);
     }
 }
 

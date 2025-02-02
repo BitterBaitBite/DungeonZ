@@ -4,6 +4,7 @@
 
 #include "SFML/Graphics/VertexArray.hpp"
 #include "Utils/Constants.h"
+#include "Utils/Random.h"
 
 class Villager : public Enemy {
     public:
@@ -19,6 +20,7 @@ class Villager : public Enemy {
         const int MAX_IDLE_TILES = 6;
         const int MAX_MOVEMENT_TILES = 6;
         const int MAX_ATTACK_TILES = 6;
+        const int ATTACK_TYPE = Random::randomInt(0, 1);
 
         int GetMaxIdleTiles() const override { return MAX_IDLE_TILES; }
         int GetMaxMovementTiles() const override { return MAX_MOVEMENT_TILES; }

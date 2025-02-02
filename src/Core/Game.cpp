@@ -6,6 +6,8 @@
 #include <SFML/Window/Event.hpp>
 #include <UI/MainMenu.h>
 
+#include "Core/AssetManager.h"
+
 
 bool Game::init() {
     assert((_window == nullptr && _world == nullptr && _mainMenu == nullptr) && "Game is already initialized");
@@ -19,6 +21,9 @@ bool Game::init() {
     _world = new World();
     loadOk &= _world->load();
 
+    _uiManager = new UIManager();
+    loadOk &= _uiManager->load();
+
     return loadOk;
 }
 
@@ -26,6 +31,7 @@ Game::~Game() {
     delete _world;
     delete _mainMenu;
     delete _window;
+    delete _uiManager;
 }
 
 bool Game::isRunning() const {
@@ -40,11 +46,15 @@ void Game::update(uint32_t deltaMilliseconds) {
         }
     }
 
+    _uiManager->update(*_window, deltaMilliseconds);
+
     if (!_gameStarted) {
         _mainMenu->update(*_window);
         _gameStarted = _mainMenu->getStartPressed();
     }
-    else _world->update(deltaMilliseconds);
+    else {
+        _world->update(deltaMilliseconds);
+    }
 }
 
 void Game::render() {
@@ -52,7 +62,11 @@ void Game::render() {
     if (!_gameStarted) {
         _mainMenu->render(*_window);
     }
-    else _world->render(*_window);
+    else {
+        _world->render(*_window);
+    }
+
+    _uiManager->render(*_window, _gameStarted);
 
     _window->display();
 }

@@ -34,7 +34,6 @@ class Player : public GameObject, public IDamageable {
         void setPosition(const sf::Vector2f& newPosition) override;
 
         bool init(const PlayerInfo& playerInfo);
-        void checkBurningState();
         void update(float deltaMilliseconds) override;
         void render(sf::RenderWindow& window) override;
 
@@ -67,6 +66,8 @@ class Player : public GameObject, public IDamageable {
         bool _isDead { false };
         int _currentHealth { 0 };
         int _maxHealth { 0 };
+
+        void AddHealth(int amount) override;
 
         // Attack
         const int DEFAULT_TILE_ROW = 2;
@@ -130,9 +131,7 @@ class Player : public GameObject, public IDamageable {
         float _burningTime { 0.0f };
         int _burningDamage { 0 };
 
-    protected:
-        // Damageable
-        void AddHealth(int amount) override;
+        void checkBurningState();
 
     public:
         // Damageable
@@ -143,8 +142,8 @@ class Player : public GameObject, public IDamageable {
         void ReceiveDamage(sf::FloatRect otherCollider, int damageAmount) override;
 
         void setInFire(float burningTime, int burningDamage);
+        bool getIsBurning() const { return _isBurning; }
 
         // Collisions
-        sf
-        ::FloatRect getCollider() const { return _playerCollider; }
+        sf::FloatRect getCollider() const { return _playerCollider; }
 };

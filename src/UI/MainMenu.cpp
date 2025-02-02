@@ -74,12 +74,6 @@ void MainMenu::renderStartButton(sf::RenderWindow& window) {
 void MainMenu::render(sf::RenderWindow& window) {
     if (_font == nullptr) return;
 
-    sf::CircleShape mouseCircle;
-    mouseCircle.setFillColor(sf::Color(200, 150, 100));
-    mouseCircle.setPosition(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
-    mouseCircle.setRadius(30.f);
-    window.draw(mouseCircle);
-
     renderTitle(window);
 
     renderStartButton(window);

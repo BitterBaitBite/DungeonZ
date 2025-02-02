@@ -22,22 +22,7 @@ FetchContent_MakeAvailable(TMXLITE)
 
 
 set(PROJECT_HEADERS
-    include/Render/SFMLOrthogonalLayer.h
     include/Assets/SpriteSheet.h
-
-    include/UI/MainMenu.h
-
-    include/Enums/Difficulty.h
-    include/Enums/DirectionEnum.h
-    include/Enums/EnemyType.h
-    include/Enums/RoomType.h
-
-    include/Interfaces/IDamageable.h
-
-    include/Utils/Constants.h
-    include/Utils/Pathfinding.h
-    include/Utils/Random.h
-    include/Utils/Vector.h
 
     include/Core/AssetManager.h
     include/Core/CollisionManager.h
@@ -47,8 +32,10 @@ set(PROJECT_HEADERS
     include/Core/WindowManager.h
     include/Core/World.h
 
-    include/Map/EnemyRoom.h
-    include/Map/Room.h
+    include/Enums/Difficulty.h
+    include/Enums/DirectionEnum.h
+    include/Enums/EnemyType.h
+    include/Enums/RoomType.h
 
     include/Gameplay/Dungeon.h
     include/Gameplay/DynamiteGoblin.h
@@ -57,15 +44,26 @@ set(PROJECT_HEADERS
     include/Gameplay/Player.h
     include/Gameplay/TorchGoblin.h
     include/Gameplay/Villager.h
+
+    include/Interfaces/IDamageable.h
+
+    include/Map/EnemyRoom.h
+    include/Map/Room.h
+
+    include/Render/SFMLOrthogonalLayer.h
+
+    include/UI/MainMenu.h
+    include/UI/MouseCursor.h
+    include/UI/PlayerUI.h
+    include/UI/UIManager.h
+
+    include/Utils/Constants.h
+    include/Utils/Pathfinding.h
+    include/Utils/Random.h
+    include/Utils/Vector.h
 )
 
 set(PROJECT_SOURCES
-    src/UI/MainMenu.cpp
-
-    src/Utils/Pathfinding.cpp
-    src/Utils/Random.cpp
-    src/Utils/Vector.cpp
-
     src/Core/AssetManager.cpp
     src/Core/CollisionManager.cpp
     src/Core/DungeonManager.cpp
@@ -74,15 +72,24 @@ set(PROJECT_SOURCES
     src/Core/WindowManager.cpp
     src/Core/World.cpp
 
-    src/Map/EnemyRoom.cpp
-    src/Map/Room.cpp
-
     src/Gameplay/Dungeon.cpp
     src/Gameplay/DynamiteGoblin.cpp
     src/Gameplay/Enemy.cpp
     src/Gameplay/Player.cpp
     src/Gameplay/TorchGoblin.cpp
     src/Gameplay/Villager.cpp
+
+    src/Map/EnemyRoom.cpp
+    src/Map/Room.cpp
+
+    src/UI/MainMenu.cpp
+    src/UI/MouseCursor.cpp
+    src/UI/PlayerUI.cpp
+    src/UI/UIManager.cpp
+
+    src/Utils/Pathfinding.cpp
+    src/Utils/Random.cpp
+    src/Utils/Vector.cpp
 
     src/main.cpp
 )
@@ -98,7 +105,12 @@ add_executable(${PROJECT_NAME} ${PROJECT_FILES})
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE sfml-graphics tmxlite)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    sfml-graphics
+    sfml-audio
+    tmxlite
+)
+
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC DEBUG_MODE=0)

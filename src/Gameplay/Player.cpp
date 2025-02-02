@@ -368,7 +368,6 @@ void Player::checkBurningState() {
 }
 
 void Player::setFireAnimation() {
-    printf("%f -> %i\n", FRAMES_PER_SECOND * _animationClock.getElapsedTime().asSeconds(), _currentFireTile.x);
     _currentFireTile.x = FRAMES_PER_SECOND * _animationClock.getElapsedTime().asSeconds();
     _currentFireTile.x %= 7;
     _currentFireTile.y = 0;
