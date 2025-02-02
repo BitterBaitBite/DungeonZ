@@ -8,7 +8,7 @@
 
 
 bool Game::init() {
-    assert(_window == nullptr && _world == nullptr, "Game is already initialized, we are about to leak memory");
+    assert((_window == nullptr && _world == nullptr && _mainMenu == nullptr) && "Game is already initialized");
 
     _window = WindowManager::getInstance()->loadWindow();
     bool loadOk = _window != nullptr;

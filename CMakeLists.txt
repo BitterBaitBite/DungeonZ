@@ -23,8 +23,10 @@ FetchContent_MakeAvailable(TMXLITE)
 
 set(PROJECT_HEADERS
     include/Render/SFMLOrthogonalLayer.h
-    include/UI/UIScreenMainMenu.h
 
+    include/UI/MainMenu.h
+
+    include/Enums/Difficulty.h
     include/Enums/DirectionEnum.h
     include/Enums/EnemyType.h
     include/Enums/RoomType.h
@@ -32,6 +34,7 @@ set(PROJECT_HEADERS
     include/Interfaces/IDamageable.h
 
     include/Utils/Constants.h
+    include/Utils/Pathfinding.h
     include/Utils/Random.h
     include/Utils/Vector.h
 
@@ -49,14 +52,18 @@ set(PROJECT_HEADERS
     include/Map/Tile.h
 
     include/Gameplay/Dungeon.h
+    include/Gameplay/DynamiteGoblin.h
     include/Gameplay/Enemy.h
     include/Gameplay/GameObject.h
     include/Gameplay/Player.h
-    include/Gameplay/TNT.h
+    include/Gameplay/TorchGoblin.h
     include/Gameplay/Villager.h
 )
 
 set(PROJECT_SOURCES
+    src/UI/MainMenu.cpp
+
+    src/Utils/Pathfinding.cpp
     src/Utils/Random.cpp
     src/Utils/Vector.cpp
 
@@ -74,9 +81,10 @@ set(PROJECT_SOURCES
     src/Map/Tile.cpp
 
     src/Gameplay/Dungeon.cpp
+    src/Gameplay/DynamiteGoblin.cpp
     src/Gameplay/Enemy.cpp
     src/Gameplay/Player.cpp
-    src/Gameplay/TNT.cpp
+    src/Gameplay/TorchGoblin.cpp
     src/Gameplay/Villager.cpp
 
     src/main.cpp
