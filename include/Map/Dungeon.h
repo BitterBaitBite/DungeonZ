@@ -13,14 +13,13 @@ namespace sf {
 class Dungeon {
     public:
         Dungeon();
-        void clearDungeon();
         ~Dungeon();
-
 
         void init();
         void render(sf::RenderWindow& window);
         void update(float deltaMilliseconds);
         void reset();
+        void clearDungeon();
 
         const sf::Vector2i getRoomPosition() const { return _currentRoom; }
         Room* getCurrentRoom() const;

@@ -31,5 +31,6 @@ class DungeonManager {
         bool moveRoom(DirectionEnum direction);
         bool moveRoom(sf::FloatRect collider);
 
+        sf::Vector2i getEnemyCount() const { return _dungeon->getEnemyCount(); }
         std::array<std::array<bool, BACKGROUND_ROW_SIZE>, BACKGROUND_COL_SIZE> getRoomCostGrid();
 };

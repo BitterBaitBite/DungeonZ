@@ -34,16 +34,16 @@ EnemyRoom::EnemyRoom(uint8_t enemyCount, EnemyType type) : _enemyType(type) {
 EnemyRoom::~EnemyRoom() {
     Room::~Room();
 
-    for (Enemy* enemy : _enemyPool) {
-        if (enemy == nullptr) continue;
-        delete enemy;
-        enemy = nullptr;
+    for (size_t i = 0; i < _enemyPool.size(); ++i) {
+        if (_enemyPool[i] == nullptr) continue;
+        delete _enemyPool[i];
+        _enemyPool[i] = nullptr;
     }
     _enemyPool.clear();
 
-    for (Enemy* enemy : _activeEnemies) {
-        if (enemy == nullptr) continue;
-        enemy = nullptr;
+    for (size_t i = 0; i < _activeEnemies.size(); ++i) {
+        if (_activeEnemies[i] == nullptr) continue;
+        _activeEnemies[i] = nullptr;
     }
     _activeEnemies.clear();
 }
@@ -60,11 +60,7 @@ void EnemyRoom::clearDeadEnemies() {
             _activeEnemies.begin(),
             _activeEnemies.end(),
             [](Enemy* enemy) {
-                if (enemy->IsDead()) {
-                    delete enemy;
-                    return true;
-                }
-                return false;
+                return enemy->IsDead();
             }
         ), _activeEnemies.end()
     );

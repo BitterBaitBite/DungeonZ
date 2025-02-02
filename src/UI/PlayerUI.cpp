@@ -87,7 +87,7 @@ void PlayerUI::update(float deltaMilliseconds) {
     _restartText.setFillColor(color);
     _restartText.setOutlineColor(outlineColor);
 
-    if (!_hasPressedRestart && sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+    if (_isDead && !_hasPressedRestart && sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         _hasPressedRestart = true;
     }
 
