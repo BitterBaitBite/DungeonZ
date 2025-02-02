@@ -1,72 +1,100 @@
+#include <map>
 #include <Core/AssetManager.h>
 #include <Core/World.h>
-#include <Gameplay/Villager.h>
-#include <SFML/Graphics/RenderWindow.hpp>
+#include <tmxlite/Map.hpp>
 
 #include "Assets/SpriteSheet.h"
+#include "Core/DungeonManager.h"
+#include "Core/WindowManager.h"
 #include "Gameplay/Player.h"
-#include "Map/Background.h"
-#include "Map/Room.h"
+#include "Gameplay/Villager.h"
+#include "Render/SFMLOrthogonalLayer.h"
 
 World::~World() {
-    delete _level01;
-    delete _player;
-    // delete _enemy;
+    delete _currentDungeon;
 }
 
-bool World::load(sf::RenderWindow* window) {
-    constexpr float millisecondsToSeconds = 1 / 1000.f;
-    auto windowCenterPosition = sf::Vector2f(window->getSize().x / 2.f, window->getSize().y / 2.f);
 
-    // Background
-    _background = new Background(
-        sf::Vector2f(
-            windowCenterPosition.x - BACKGROUND_ROW_SIZE * TILE_WIDTH / 2.f,
-            windowCenterPosition.y - BACKGROUND_COL_SIZE * TILE_WIDTH / 2.f
-        )
-    );
+bool World::load() {
+    // Load current dungeon (level)
+    _currentDungeon = DungeonManager::getInstance()->loadDungeon();
 
-    // Room
-    _level01 = new Room(
-        sf::Vector2f(
-            windowCenterPosition.x - ROOM_ROW_SIZE * TILE_WIDTH / 2.f,
-            windowCenterPosition.y - ROOM_COL_SIZE * TILE_WIDTH / 2.f
-        )
-    );
-
-    //----------------- PLAYER TEST ---------------------
-    // TO DO read from file
-    // Player texture data: (texture path, rows, cols)
-    SpriteSheet::SheetDescriptor playerSheetDesc;
-    playerSheetDesc.path = "../Data/Images/Player/Warrior_Blue.png";
-    playerSheetDesc.rows = 8;
-    playerSheetDesc.cols = 6;
-    auto playerSpriteSheet = new SpriteSheet(playerSheetDesc);
-
-    // Player object data: (texture
-    Player::PlayerDescriptor playerDesc;
-    sf::Texture* playerTexture = AssetManager::getInstance()->loadTexture(playerSpriteSheet->getPath());
-    playerDesc.texture = playerTexture;
-    playerDesc.position = sf::Vector2f(window->getSize().x / 2, window->getSize().y / 2);
-    playerDesc.scale = sf::Vector2f(1.f, 1.f);
-    playerDesc.speed = { 400.f * millisecondsToSeconds, 400.f * millisecondsToSeconds };
-    playerDesc.spriteHeight = (playerDesc.texture->getSize().y / playerSpriteSheet->getRows()) * playerDesc.scale.y;
-    playerDesc.spriteWidth = (playerDesc.texture->getSize().x / playerSpriteSheet->getCols()) * playerDesc.scale.x;
-
-    _player = new Player();
-    const bool playerOk = _player->init(playerDesc);
-    //--------------------------------------------------
-
-    return playerOk;
+    // Load player
+    return loadPlayer();
 }
 
 void World::update(uint32_t deltaMilliseconds) {
-    _level01->update(deltaMilliseconds);
-    _player->update(deltaMilliseconds);
+    // Dungeon
+    _currentDungeon->update(deltaMilliseconds);
+
+    // Player
+    Player::getInstance()->update(deltaMilliseconds);
 }
 
 void World::render(sf::RenderWindow& window) {
-    _background->render(window);
-    _level01->render(window);
-    _player->render(window);
+    // Dungeon
+    _currentDungeon->render(window);
+
+    // Player
+    Player::getInstance()->render(window);
+}
+
+void World::reset() {
+    Player::PlayerInfo playerInfo;
+    getPlayerInfo(playerInfo);
+    Player::getInstance()->reset(playerInfo);
+
+    _currentDungeon->reset();
+}
+
+void World::getPlayerSpriteInfo(SpriteSheet*& playerSpriteSheet, sf::Texture*& playerTexture) {
+    SpriteSheet::SpriteSheetInfo playerSheetDesc;
+    playerSheetDesc.path = "../Data/Images/Player/Warrior_Blue.png";
+    playerSheetDesc.rows = 8;
+    playerSheetDesc.cols = 6;
+    playerSpriteSheet = new SpriteSheet(playerSheetDesc);
+    playerTexture = AssetManager::getInstance()->loadTexture(playerSpriteSheet->getPath());
+}
+
+void World::getPlayerFireSpriteInfo(SpriteSheet*& fireSpriteSheet, sf::Texture*& fireTexture) {
+    SpriteSheet::SpriteSheetInfo fireSheetDesc;
+    fireSheetDesc.path = "../Data/Images/Effects/Fire.png";
+    fireSheetDesc.rows = 1;
+    fireSheetDesc.cols = 7;
+    fireSpriteSheet = new SpriteSheet(fireSheetDesc);
+    fireTexture = AssetManager::getInstance()->loadTexture(fireSpriteSheet->getPath());
+}
+
+void World::setPlayerInfo(SpriteSheet* playerSpriteSheet, sf::Texture* playerTexture, SpriteSheet* fireSpriteSheet,
+                          sf::Texture* fireTexture, Player::PlayerInfo& playerInfo) {
+    playerInfo.texture = playerTexture;
+    playerInfo.fireTexture = fireTexture;
+    playerInfo.position = WindowManager::getInstance()->getWindowCenter();
+    playerInfo.speed = { 400.f * MILLISECONDS_TO_SECONDS, 400.f * MILLISECONDS_TO_SECONDS };
+    playerInfo.spriteHeight = playerInfo.texture->getSize().y / playerSpriteSheet->getRows() * playerInfo.scale.y;
+    playerInfo.spriteWidth = playerInfo.texture->getSize().x / playerSpriteSheet->getCols() * playerInfo.scale.x;
+    playerInfo.fireSpriteHeight = playerInfo.fireTexture->getSize().y / fireSpriteSheet->getRows() * playerInfo.scale.y;
+    playerInfo.fireSpriteWidth = playerInfo.fireTexture->getSize().x / fireSpriteSheet->getCols() * playerInfo.scale.x;
+    playerInfo.maxHealth = 10;
+}
+
+void World::getPlayerInfo(Player::PlayerInfo& playerInfo) {
+    SpriteSheet* playerSpriteSheet;
+    sf::Texture* playerTexture;
+    getPlayerSpriteInfo(playerSpriteSheet, playerTexture);
+
+    SpriteSheet* fireSpriteSheet;
+    sf::Texture* fireTexture;
+    getPlayerFireSpriteInfo(fireSpriteSheet, fireTexture);
+
+    setPlayerInfo(playerSpriteSheet, playerTexture, fireSpriteSheet, fireTexture, playerInfo);
+}
+
+bool World::loadPlayer() {
+    Player::PlayerInfo playerInfo;
+    getPlayerInfo(playerInfo);
+
+    const bool playerOk = Player::getInstance()->init(playerInfo);
+
+    return playerOk;
 }

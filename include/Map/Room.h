@@ -1,8 +1,13 @@
 #pragma once
-#include <Assets/SpriteSheet.h>
+#include <bitset>
+#include <vector>
+#include <tmxlite/Map.hpp>
 
-#include "Map/Tile.h"
-#include "Utils/Constants.h"
+#include "Enums/DirectionEnum.h"
+#include "SFML/Graphics/Rect.hpp"
+
+class MapLayer;
+class ObjectLayer;
 
 namespace sf {
     class RenderWindow;
@@ -10,19 +15,22 @@ namespace sf {
 
 class Room {
     public:
-        Room();
-        Room(sf::Vector2f pos);
-        void initTile(SpriteSheet* baseSprite, sf::Texture* foamTexture, Tile* layer[ROOM_ROW_SIZE][ROOM_COL_SIZE]);
-        ~Room();
+        virtual ~Room();
 
-    private:
-        sf::Vector2f _position;
-        Tile* foamLayer[ROOM_ROW_SIZE][ROOM_COL_SIZE];
-        Tile* groundLayer[ROOM_ROW_SIZE][ROOM_COL_SIZE];
+        virtual void init(std::vector<DirectionEnum> adjacentRooms);
+        std::bitset<4> getDirectionsMask(std::vector<DirectionEnum> directions);
+        const char* getRoomMapPath(std::vector<DirectionEnum> availableRooms);
+        virtual void update(uint32_t deltaTime);
+        virtual void render(sf::RenderWindow& window);
 
-        void initTiles();
+    protected:
+        tmx::Map* _map { nullptr };
+        std::vector<MapLayer*> _layers;
+        std::vector<ObjectLayer*> _collisionLayers;
+        std::vector<sf::FloatRect> _collisionRects;
 
     public:
-        void update(float deltaMilliseconds);
-        void render(sf::RenderWindow& window);
+        void initObjectColliders();
+        std::vector<sf::FloatRect> getObjectColliders() const { return _collisionRects; }
+        std::string toString(bool current = false);
 };

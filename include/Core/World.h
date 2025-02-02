@@ -1,31 +1,36 @@
 #pragma once
 
-#include <unordered_set>
+#include <tmxlite/Map.hpp>
 
-#include "Gameplay/GameObject.h"
+#include "Assets/SpriteSheet.h"
 #include "Gameplay/Player.h"
+#include "Map/Dungeon.h"
 
 class Background;
 class Room;
-class Enemy;
 
 namespace sf {
     class RenderWindow;
 }
 
+class MapLayer;
+
 class World {
     public:
         ~World();
 
-        // TO-DO: Ideally the scene should be read from file.
-        bool load(sf::RenderWindow* window);
-
+        bool load();
         void update(uint32_t deltaMilliseconds);
         void render(sf::RenderWindow& window);
+        void reset();
+        void getPlayerSpriteInfo(SpriteSheet*& playerSpriteSheet, sf::Texture*& playerTexture);
+        void getPlayerFireSpriteInfo(SpriteSheet*& fireSpriteSheet, sf::Texture*& fireTexture);
+        void setPlayerInfo(SpriteSheet* playerSpriteSheet, sf::Texture* playerTexture, SpriteSheet* fireSpriteSheet,
+                           sf::Texture* fireTexture, Player::PlayerInfo& playerInfo);
+        void getPlayerInfo(Player::PlayerInfo& playerInfo);
 
     private:
-        Background* _background { nullptr };
-        Room* _level01 { nullptr };
-        std::unordered_set<Enemy*> _enemyList { nullptr };
-        Player* _player { nullptr };
+        Dungeon* _currentDungeon { nullptr }; // Dungeon = Level
+
+        bool loadPlayer();
 };
