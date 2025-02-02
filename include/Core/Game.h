@@ -3,6 +3,12 @@
 #include <cstdint>
 #include <string>
 
+#include "SFML/Graphics/Sprite.hpp"
+#include "UI/MouseCursor.h"
+#include "UI/UIManager.h"
+
+class MainMenu;
+
 namespace sf {
     class RenderWindow;
 }
@@ -21,7 +27,7 @@ class Game {
 
         ~Game();
 
-        bool init(GameCreateInfo& createInfo);
+        bool init();
 
         bool isRunning() const;
 
@@ -30,5 +36,9 @@ class Game {
 
     private:
         sf::RenderWindow* _window { nullptr };
+        UIManager* _uiManager { nullptr };
+        MainMenu* _mainMenu { nullptr };
         World* _world { nullptr };
+
+        bool _gameStarted { false };
 };

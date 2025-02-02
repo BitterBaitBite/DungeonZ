@@ -1,29 +1,30 @@
 #pragma once
 
-#include <cstdint>
-#include <list>
+#include <tmxlite/FreeFuncs.hpp>
+#include <tmxlite/Map.hpp>
 
-#include "Gameplay/GameObject.h"
+#include "Gameplay/Dungeon.h"
+#include "Gameplay/Player.h"
 
-class Enemy;
+class Background;
+class Room;
 
 namespace sf {
     class RenderWindow;
 }
 
+class MapLayer;
+
 class World {
     public:
         ~World();
 
-        // TO-DO: Ideally the scene should be read from file.
-        bool load(sf::RenderWindow* window);
-
+        bool load();
         void update(uint32_t deltaMilliseconds);
         void render(sf::RenderWindow& window);
 
     private:
-        // This is just an example. Think a good way to group the actors of your game. If they need any type of manager, etc...
-        Enemy* _enemy { nullptr };
+        Dungeon* _currentDungeon { nullptr }; // Dungeon = Level
 
-        std::list<GameObject*> _gameObjects;
+        bool loadPlayer();
 };
