@@ -123,7 +123,7 @@ void EnemyRoom::initializeEnemies() {
 }
 
 Enemy::EnemyInfo EnemyRoom::getDefaultEnemyInfo() {
-    SpriteSheet::SheetDescriptor enemySpriteInfo;
+    SpriteSheet::SpriteSheetInfo enemySpriteInfo;
     enemySpriteInfo.path = "../Data/Images/Enemies/Pawn_Purple.png";
     enemySpriteInfo.rows = 6;
     enemySpriteInfo.cols = 6;
@@ -141,7 +141,7 @@ Enemy::EnemyInfo EnemyRoom::getDefaultEnemyInfo() {
 }
 
 Villager::VillagerInfo EnemyRoom::getVillagerInfo() {
-    SpriteSheet::SheetDescriptor enemySheetDesc;
+    SpriteSheet::SpriteSheetInfo enemySheetDesc;
     enemySheetDesc.path = "../Data/Images/Enemies/Pawn_Red.png";
     enemySheetDesc.rows = 6;
     enemySheetDesc.cols = 6;
@@ -160,7 +160,7 @@ Villager::VillagerInfo EnemyRoom::getVillagerInfo() {
 }
 
 TorchGoblin::TorchGoblinInfo EnemyRoom::getTorchGoblinInfo() {
-    SpriteSheet::SheetDescriptor enemySheetDesc;
+    SpriteSheet::SpriteSheetInfo enemySheetDesc;
     enemySheetDesc.path = "../Data/Images/Enemies/Torch_Red.png";
     enemySheetDesc.rows = 5;
     enemySheetDesc.cols = 7;

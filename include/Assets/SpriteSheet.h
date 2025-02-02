@@ -1,10 +1,8 @@
 #pragma once
 
-#include "sfml\Graphics.hpp"
-
 class SpriteSheet {
     public:
-        struct SheetDescriptor {
+        struct SpriteSheetInfo {
             const char* path;
             int rows;
             int cols;
@@ -12,14 +10,14 @@ class SpriteSheet {
             sf::IntRect renderRect;
         };
 
-        SpriteSheet(SheetDescriptor descriptor) :
-            _path(descriptor.path),
-            _rows(descriptor.rows),
-            _cols(descriptor.cols),
-            _offset(descriptor.tileOffset),
-            _rect(descriptor.renderRect) {};
+        SpriteSheet(const SpriteSheetInfo& spriteSheetInfo) :
+            _rows(spriteSheetInfo.rows),
+            _cols(spriteSheetInfo.cols),
+            _path(spriteSheetInfo.path),
+            _offset(spriteSheetInfo.tileOffset),
+            _rect(spriteSheetInfo.renderRect) {}
 
-        ~SpriteSheet() { delete _path; _path = nullptr; };
+        ~SpriteSheet() = default;
 
         int getRows() const { return _rows; }
         int getCols() const { return _cols; }

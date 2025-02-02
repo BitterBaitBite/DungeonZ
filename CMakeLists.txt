@@ -23,6 +23,7 @@ FetchContent_MakeAvailable(TMXLITE)
 
 set(PROJECT_HEADERS
     include/Render/SFMLOrthogonalLayer.h
+    include/Assets/SpriteSheet.h
 
     include/UI/MainMenu.h
 
@@ -46,10 +47,8 @@ set(PROJECT_HEADERS
     include/Core/WindowManager.h
     include/Core/World.h
 
-    include/Map/Background.h
     include/Map/EnemyRoom.h
     include/Map/Room.h
-    include/Map/Tile.h
 
     include/Gameplay/Dungeon.h
     include/Gameplay/DynamiteGoblin.h
@@ -75,10 +74,8 @@ set(PROJECT_SOURCES
     src/Core/WindowManager.cpp
     src/Core/World.cpp
 
-    src/Map/Background.cpp
     src/Map/EnemyRoom.cpp
     src/Map/Room.cpp
-    src/Map/Tile.cpp
 
     src/Gameplay/Dungeon.cpp
     src/Gameplay/DynamiteGoblin.cpp

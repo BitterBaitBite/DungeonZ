@@ -40,14 +40,14 @@ void World::render(sf::RenderWindow& window) {
 }
 
 bool World::loadPlayer() {
-    SpriteSheet::SheetDescriptor playerSheetDesc;
+    SpriteSheet::SpriteSheetInfo playerSheetDesc;
     playerSheetDesc.path = "../Data/Images/Player/Warrior_Blue.png";
     playerSheetDesc.rows = 8;
     playerSheetDesc.cols = 6;
     auto playerSpriteSheet = new SpriteSheet(playerSheetDesc);
     sf::Texture* playerTexture = AssetManager::getInstance()->loadTexture(playerSpriteSheet->getPath());
 
-    SpriteSheet::SheetDescriptor fireSheetDesc;
+    SpriteSheet::SpriteSheetInfo fireSheetDesc;
     fireSheetDesc.path = "../Data/Images/Effects/Fire.png";
     fireSheetDesc.rows = 1;
     fireSheetDesc.cols = 7;

@@ -33,10 +33,6 @@ class Player : public GameObject, public IDamageable {
 
         void setPosition(const sf::Vector2f& newPosition) override;
 
-        const sf::Vector2f& getCenterPosition() const {
-            return { _position.x + _spriteWidth / 2, _position.y + _spriteHeight / 2 };
-        }
-
         bool init(const PlayerInfo& playerInfo);
         void checkBurningState();
         void update(float deltaMilliseconds) override;
