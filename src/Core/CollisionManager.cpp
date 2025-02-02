@@ -75,7 +75,10 @@ bool CollisionManager::hasObjectCollision(sf::FloatRect rect, std::vector<Direct
 
 // TODO
 bool CollisionManager::hasPlayerCollision(sf::FloatRect rect) {
-    return rect.intersects(Player::getInstance()->getCollider());
+    Player* player = Player::getInstance();
+    if (player->IsDead()) return false;
+
+    return rect.intersects(player->getCollider());
 }
 
 std::vector<Enemy*> CollisionManager::getEnemyCollisions(sf::FloatRect rect) {

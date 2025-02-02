@@ -14,24 +14,31 @@
 class Player : public GameObject, public IDamageable {
     public:
         static Player* getInstance();
-        static IDamageable* getDamageable();
 
         struct PlayerInfo {
             sf::Vector2f scale { 1.f, 1.f };
             sf::Vector2f position { 0.f, 0.f };
             sf::Vector2f speed { .0f, .0f };
             sf::Texture* texture { nullptr };
+            sf::Texture* fireTexture { nullptr };
             float spriteWidth { .0f };
             float spriteHeight { .0f };
+            float fireSpriteWidth { .0f };
+            float fireSpriteHeight { .0f };
 
             int maxHealth { 0 };
         };
 
-        ~Player() override = default;
+        ~Player() override;
 
         void setPosition(const sf::Vector2f& newPosition) override;
 
-        bool init(const PlayerInfo& playerDescriptor);
+        const sf::Vector2f& getCenterPosition() const {
+            return { _position.x + _spriteWidth / 2, _position.y + _spriteHeight / 2 };
+        }
+
+        bool init(const PlayerInfo& playerInfo);
+        void checkBurningState();
         void update(float deltaMilliseconds) override;
         void render(sf::RenderWindow& window) override;
 
@@ -41,17 +48,20 @@ class Player : public GameObject, public IDamageable {
     private:
         static Player* _instance;
 
-        // Movement
-        sf::Vector2f _speed { .0f, .0f };
-        sf::Vector2f _direction { .0f, .0f };
-        sf::FloatRect _playerCollider { 0.f, 0.f, 0.f, 0.f };
-
-        // Sprite
+        // Render
         sf::Sprite _sprite;
         sf::Color _spriteColor { sf::Color::White };
         sf::Color _damageColor { 255, 100, 100 };
         float _spriteWidth { .0f };
         float _spriteHeight { .0f };
+
+        sf::Sprite _fireSprite;
+        float _fireSpriteWidth { .0f };
+        float _fireSpriteHeight { .0f };
+
+        void renderFire(sf::RenderWindow& window);
+        void renderInvulnerable();
+        void renderPlayer(sf::RenderWindow& window);
 
         // Damageable
         const float INVULNERABILITY_DURATION = 1.f;
@@ -86,13 +96,17 @@ class Player : public GameObject, public IDamageable {
 
         // Movement
         bool _isMoving { false };
+        sf::Vector2f _speed { .0f, .0f };
+        sf::Vector2f _direction { .0f, .0f };
+        sf::FloatRect _playerCollider { 0.f, 0.f, 0.f, 0.f };
         DirectionEnum _faceDirection { 0 };
-        FaceDirectionX _faceDirectionX { 0 };
+        DirectionX _faceDirectionX { 0 };
         FaceDirectionY _faceDirectionY { 0 };
 
         void move(float deltaMilliseconds);
         void getMoveInput();
         void setFacingDirection();
+        void setFireAnimation();
         void setMoveAnimation();
         void setMovePosition(float deltaMilliseconds);
 
@@ -102,12 +116,23 @@ class Player : public GameObject, public IDamageable {
         void BouncePosition(sf::Vector2f& velocity, std::vector<DirectionEnum> direction);
         void WarpPosition();
 
-        // Animation
+        // Animations
+        const int MAX_IDLE_TILES = 6;
+        const int MAX_MOVEMENT_TILES = 6;
+        const int MAX_ATTACK_TILES = 6;
         const int IDLE_ROW = 0;
         const int RUN_ROW = 1;
-        const int MAX_TILE_FRAMES = 6;
         sf::Clock _animationClock;
         sf::Vector2u _currentTile { 0, 0 };
+        sf::Vector2u _currentFireTile { 0, 0 };
+
+        // Burning
+        const float BURNING_TICK_DELAY = 1.f;
+        sf::Clock _burningClock;
+        sf::Clock _burningTickClock;
+        bool _isBurning { false };
+        float _burningTime { 0.0f };
+        int _burningDamage { 0 };
 
     protected:
         // Damageable
@@ -118,8 +143,12 @@ class Player : public GameObject, public IDamageable {
         bool IsDead() const override { return _isDead; }
         int GetHealth() const override;
         int GetMaxHealth() const override;
+        void ReceiveDamage(int damageAmount) override;
         void ReceiveDamage(sf::FloatRect otherCollider, int damageAmount) override;
 
+        void setInFire(float burningTime, int burningDamage);
+
         // Collisions
-        sf::FloatRect getCollider() const { return _playerCollider; }
+        sf
+        ::FloatRect getCollider() const { return _playerCollider; }
 };

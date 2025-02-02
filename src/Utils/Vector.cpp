@@ -1,5 +1,3 @@
-#include <corecrt_math.h>
-#include <valarray>
 #include <vector>
 #include <Utils/Vector.h>
 

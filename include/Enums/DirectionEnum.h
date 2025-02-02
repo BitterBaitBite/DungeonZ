@@ -9,7 +9,7 @@ enum class DirectionEnum {
     Left,
 };
 
-enum class FaceDirectionX {
+enum class DirectionX {
     Right,
     Left,
 };

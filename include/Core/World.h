@@ -8,7 +8,6 @@
 
 class Background;
 class Room;
-class Enemy;
 
 namespace sf {
     class RenderWindow;
@@ -25,7 +24,7 @@ class World {
         void render(sf::RenderWindow& window);
 
     private:
-        Enemy* _enemyTest { nullptr };
-        Player* _player { nullptr };
         Dungeon* _currentDungeon { nullptr }; // Dungeon = Level
+
+        bool loadPlayer();
 };

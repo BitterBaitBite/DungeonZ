@@ -17,51 +17,106 @@ bool Villager::init(EnemyInfo* enemyInfo) {
     return Enemy::init(enemyInfo);
 }
 
+
 void Villager::update(float deltaMilliseconds) {
-    // Enemy::update(deltaMilliseconds);
-    if (_pathToTarget.empty()) {
-        _pathToTarget = getPath(sf::Vector2i({
-                                    static_cast<int>(_position.x / TILE_WIDTH),
-                                    static_cast<int>(_position.y / TILE_HEIGHT)
-                                }),
-                                sf::Vector2i({
-                                    static_cast<int>(Player::getInstance()->getPosition().x / TILE_WIDTH),
-                                    static_cast<int>(Player::getInstance()->getPosition().y / TILE_HEIGHT)
-                                }),
-                                DungeonManager::getInstance()->getRoomCostGrid());
+    if (_isDead) return;
+
+    // Check if vulnerable
+    if (_isInvulnerable && _invulnerabilityClock.getElapsedTime().asSeconds() >= INVULNERABILITY_DURATION) {
+        _isInvulnerable = false;
     }
 
-    if (_currentTarget >= _pathToTarget.size()) return;
-
-    sf::Vector2f targetPos(_pathToTarget[_currentTarget].x * TILE_WIDTH, _pathToTarget[_currentTarget].y * TILE_HEIGHT);
-    sf::Vector2f currentPos = _sprite.getPosition();
-    sf::Vector2f direction = targetPos - currentPos;
-
-    // float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
-    float distance = Vector::magnitude(direction);
-    if (distance < _speed.x * deltaMilliseconds) {
-        _sprite.setPosition(targetPos);
-        _currentTarget++;
+    checkPlayerCollision();
+    if (_isAttacking) {
+        attack();
     }
-    else {
-        direction /= distance; // Normalize
 
-        // _position.x += direction.x * deltaMilliseconds;
-        // _position.y += direction.y * deltaMilliseconds;
-
-        _sprite.move(direction * _speed.x * deltaMilliseconds);
+    if (!_isAttacking) {
+        move(deltaMilliseconds);
     }
 }
 
-void Villager::render(sf::RenderWindow& window) {
-    Enemy::render(window);
+void Villager::attack() {
+    attackAnimation();
+    checkAttackCollisions();
+}
+
+bool Villager::attackAnimation() {
+    bool animationFinished = false;
+    _currentTile.x = FRAMES_PER_SECOND * _attackAnimationClock.getElapsedTime().asSeconds();
+
+    if (_currentTile.x == 3) {
+        setAttackCollider();
+    }
+
+    if (_currentTile.x >= MAX_ATTACK_TILES) {
+        _currentTile.x %= MAX_ATTACK_TILES;
+        _isAttacking = false;
+        animationFinished = true;
+    }
+
+    // int tileColumn = D_SPRITE_ATTACK_ROW + static_cast<int>(_faceDirectionX);
+    int tileColumn = D_SPRITE_ATTACK_ROW + Random::randomInt(0, 1);
+    if (_faceDirectionX == DirectionX::Left) tileColumn = D_SPRITE_ATTACK_ROW;
+
+    _currentTile.y = tileColumn;
+
+    return animationFinished;
+}
+
+void Villager::resetAttackAnimation() {
+    _currentTile.x = 0;
+    _attackAnimationClock.restart();
+}
+
+void Villager::setAttackCollider() {
+    sf::FloatRect attackColliderRect = {
+        _enemyCollider.left - _enemyCollider.width / 2,
+        _enemyCollider.top - _enemyCollider.height / 2,
+        TILE_WIDTH,
+        TILE_HEIGHT * 2,
+    };
+
+    switch (_faceDirectionX) {
+        case DirectionX::Right:
+            attackColliderRect.left = _enemyCollider.left + _enemyCollider.width - _enemyCollider.width / 2;
+            break;
+
+        case DirectionX::Left:
+            attackColliderRect.left = _enemyCollider.left - _enemyCollider.width / 2;
+            break;
+    }
+
+    _attackCollider = attackColliderRect;
+}
+
+void Villager::checkAttackCollisions() {
+    if (CollisionManager::getInstance()->hasPlayerCollision(_attackCollider)) {
+        DoDamage(Player::getInstance(), _attackDamage);
+    }
 }
 
 void Villager::calcTargetPosition() {
     Enemy::calcTargetPosition();
 
-    float targetDistance = Vector::heuristicDistance(_position, _targetPosition);
+    if (_targetPosition.x < 0 || _targetPosition.y < 0) {
+        _hasCloseTarget = false;
+        return;
+    }
+
+    float targetDistance = Vector::distance(_position, _targetPosition);
     _hasCloseTarget = targetDistance <= TARGET_RANGE;
+}
+
+void Villager::checkPlayerCollision() {
+    if (_isAttacking) return;
+
+    if (CollisionManager::getInstance()->hasPlayerCollision(_enemyCollider)) {
+        _isAttacking = true;
+        resetAttackAnimation();
+    }
+
+    _attackCollider = { 0.f, 0.f, 0.f, 0.f };
 }
 
 void Villager::debugSprite(sf::RenderWindow& window) {
@@ -83,61 +138,101 @@ void Villager::debugSprite(sf::RenderWindow& window) {
     attackRect.setFillColor(sf::Color::Transparent);
 
     window.draw(closeTargetCircle);
-    // window.draw(attackRect);
-
-    // Path
-    window.draw(_pathLine);
+    window.draw(attackRect);
 }
 
 void Villager::move(float deltaMilliseconds) {
+    calcTargetPosition();
+
     if (_hasCloseTarget) {
-        auto currentPos = sf::Vector2i(_position.x, _position.y);
-        auto currentTarget = sf::Vector2i(_targetPosition.x, _targetPosition.y);
-
-        if (_pathToTarget.empty()) {
-            _pathToTarget = Pathfinding::getPath(
-                currentPos,
-                currentTarget,
-                DungeonManager::getInstance()->getRoomCostGrid()
-            );
-            _currentTarget = 0;
-        }
-
-        if (_currentTarget < _pathToTarget.size()) {
-            if (_pathClock.getElapsedTime().asSeconds() > 0.2f) {
-                _direction.x = _pathToTarget[_currentTarget].x;
-                _direction.y = _pathToTarget[_currentTarget].y;
-
-                _currentTarget++;
-                _pathClock.restart();
-            }
-
-            float magnitude = Vector::magnitude(_direction);
-            if (magnitude > 0.0f) _isMoving = true;
-            else _isMoving = false;
-        }
+        movePathToTarget(deltaMilliseconds);
     }
     else {
-        if (!_pathToTarget.empty()) {
-            _pathToTarget.clear();
-        }
+        getMoveDirection();
+        setMovePosition(deltaMilliseconds);
     }
 
-    Enemy::move(deltaMilliseconds);
+    setFacingDirection();
+    setMoveAnimation();
+}
+
+void Villager::resetPathToTarget() {
+    sf::Vector2i targetTile = {
+        static_cast<int>((_targetPosition.x + _spriteWidth / 2) / TILE_WIDTH),
+        static_cast<int>((_targetPosition.y + _spriteHeight / 2) / TILE_HEIGHT)
+    };
+
+    sf::Vector2i currentTile = {
+        static_cast<int>((_position.x + _spriteWidth / 2) / TILE_WIDTH),
+        static_cast<int>((_position.y + _spriteHeight / 2) / TILE_HEIGHT)
+    };
+
+    _pathToTarget = Pathfinding::getPath(
+        currentTile,
+        targetTile,
+        DungeonManager::getInstance()->getRoomCostGrid()
+    );
+
+    _currentTarget = 0;
+    _repathClock.restart();
+}
+
+void Villager::movePathToTarget(float deltaMilliseconds) {
+    // Added clock to get a new path every *REPATH_TIME* time (.5f default)
+    if (_pathToTarget.empty() || _repathClock.getElapsedTime().asSeconds() >= REPATH_TIME) {
+        resetPathToTarget();
+    }
+
+    if (_currentTarget >= _pathToTarget.size()) {
+        _pathToTarget.clear();
+        _isMoving = false;
+        return;
+    }
+
+    sf::Vector2f targetPos(_pathToTarget[_currentTarget].x * TILE_WIDTH - TILE_WIDTH,
+                           _pathToTarget[_currentTarget].y * TILE_HEIGHT - TILE_HEIGHT);
+    sf::Vector2f currentPos = _sprite.getPosition();
+    _direction = targetPos - currentPos;
+
+    float distance = Vector::magnitude(_direction);
+    if (distance < _speed.x * deltaMilliseconds) {
+        _sprite.setPosition(targetPos);
+        _currentTarget++;
+        _isMoving = false;
+    }
+    else {
+        _direction /= distance; // Normalize
+
+        auto velocity = sf::Vector2f(_direction.x * _speed.x * deltaMilliseconds,
+                                     _direction.y * _speed.y * deltaMilliseconds);
+
+        _position.x += velocity.x;
+        _position.y += velocity.y;
+
+        _enemyCollider.left += velocity.x;
+        _enemyCollider.top += velocity.y;
+
+        _sprite.move(velocity);
+
+        float magnitude = Vector::magnitude(_direction);
+        if (magnitude > 0.0f) _isMoving = true;
+        else _isMoving = false;
+    }
 }
 
 void Villager::getMoveDirection() {
-    if (!_hasCloseTarget) {
-        // Patrol delay control
-        if (!_isPatrolling && _patrolDelayClock.getElapsedTime().asSeconds() >= PATROL_DELAY_TIME) {
-            _patrolClock.restart();
-            _isPatrolling = true;
+    _direction = { 0, 0 };
 
-            // TODO: change the random so direction can be a bitmask
-            _faceDirection = static_cast<DirectionEnum>(Random::randomInt(0, 3));
-        }
+    // Patrol delay control
+    if (!_isPatrolling && _patrolDelayClock.getElapsedTime().asSeconds() >= PATROL_DELAY_TIME) {
+        _patrolClock.restart();
+        _isPatrolling = true;
 
-        if (_isPatrolling) {}
+        // TODO: change the random so direction can be a bitmask
+        _faceDirection = static_cast<DirectionEnum>(Random::randomInt(0, 3));
+    }
+
+    if (_isPatrolling) {
         // Patrol movement direction
         if (_faceDirection == DirectionEnum::Left) {
             _direction.x = -1.0f;
@@ -164,89 +259,4 @@ void Villager::getMoveDirection() {
     float magnitude = Vector::magnitude(_direction);
     if (magnitude > 0.0f) _isMoving = true;
     else _isMoving = false;
-}
-
-std::vector<sf::Vector2i> Villager::getPath(
-    sf::Vector2i start,
-    sf::Vector2i goal,
-    std::array<std::array<bool, BACKGROUND_ROW_SIZE>, BACKGROUND_COL_SIZE>& grid
-) {
-    std::unordered_map<int, Node> allNodes;
-
-    // Nodes to check ordered by fCost (total cost)
-    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openSet;
-
-    // Gets a unique index for any two-dimensional coordinates of a node
-    auto nodeIndex = [](int x, int y) { return y * BACKGROUND_ROW_SIZE + x; };
-
-    // Sets the node to start
-    Node startNode = { start.x, start.y, 0, Vector::heuristicDistance(start.x, start.y, goal.x, goal.y), 0, nullptr };
-    // Node startNode;
-    // {
-    //     startNode.x = start.x;
-    //     startNode.y = start.y;
-    //     startNode.gCost = 0;
-    //     startNode.hCost = Vector::heuristicDistance(start.x, start.y, goal.x, goal.y);
-    //     startNode.fCost = 0;
-    //     startNode.parent = nullptr;
-    // }
-    openSet.push(startNode);
-    allNodes[nodeIndex(start.x, start.y)] = startNode;
-
-    // While there's nodes to check
-    while (!openSet.empty()) {
-        // Extracts the top node from the search queue (the one with least fCost)
-        Node current = openSet.top();
-        openSet.pop();
-
-        // If the node is the goal, gets the path backwards by node parent and reverses it
-        if (current.x == goal.x && current.y == goal.y) {
-            std::vector<sf::Vector2i> path;
-            while (current.parent) {
-                path.push_back({ current.x, current.y });
-                current = *current.parent;
-            }
-            std::reverse(path.begin(), path.end());
-
-            return path;
-        }
-
-        // Creates a vector with the adjacent node coordinates
-        std::vector<sf::Vector2i> adjacents = {
-            { current.x + 1, current.y },
-            { current.x - 1, current.y },
-            { current.x, current.y + 1 },
-            { current.x, current.y - 1 }
-        };
-
-        // Checks all adjacent nodes
-        for (const auto& adjacent : adjacents) {
-            // Ignores collision or non existent nodes
-            if (grid[adjacent.y][adjacent.x]) continue;
-
-            // Updates the costs (gCost = path length / hCost = distance from adjacent position to goal / fCost = gCost + hCost (total cost)
-            float gCost = current.gCost + 1;
-            float hCost = Vector::heuristicDistance(adjacent.x, adjacent.y, goal.x, goal.y);
-            float fCost = gCost + hCost;
-
-            // Continues on adjacent node if already checked and total cost is less or equal
-            if (allNodes.count(nodeIndex(adjacent.x, adjacent.y)) // Counts nodes by index
-                && allNodes[nodeIndex(adjacent.x, adjacent.y)].fCost <= fCost)
-                continue;
-
-            Node adjacentNode = {
-                adjacent.x,
-                adjacent.y,
-                gCost,
-                hCost,
-                fCost,
-                &allNodes[nodeIndex(current.x, current.y)]
-            };
-
-            openSet.push(adjacentNode);
-            allNodes[nodeIndex(adjacent.x, adjacent.y)] = adjacentNode;
-        }
-    }
-
-    return {};
 }

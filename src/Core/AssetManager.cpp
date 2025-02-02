@@ -1,6 +1,8 @@
 #include <Core/AssetManager.h>
 #include <tmxlite/Map.hpp>
 
+#include "SFML/Graphics/Font.hpp"
+
 AssetManager* AssetManager::_instance { nullptr };
 
 AssetManager* AssetManager::getInstance() {
@@ -14,6 +16,16 @@ AssetManager::~AssetManager() {
     for (auto pair : _texturePathToTexture) {
         delete pair.second;
     }
+
+    for (auto pair : _fontPathToFont) {
+        delete pair.second;
+    }
+
+    for (auto pair : _mapPathToMap) {
+        delete pair.second;
+    }
+
+    delete _instance;
 }
 
 sf::Texture* AssetManager::loadTexture(const char* assetPath) {
@@ -38,6 +50,23 @@ sf::Texture* AssetManager::getTexture(const char* assetPath) const {
     const auto it = _texturePathToTexture.find(assetPath);
 
     return (it != _texturePathToTexture.end()) ? it->second : nullptr;
+}
+
+sf::Font* AssetManager::loadFont(const char* assetPath) {
+    auto pair = _fontPathToFont.find(assetPath);
+    if (pair != _fontPathToFont.end()) {
+        return pair->second; // Returns the existing font
+    }
+
+    auto newFont = new sf::Font();
+    const bool loadOk = newFont->loadFromFile(assetPath);
+    if (!loadOk) {
+        delete newFont;
+        return nullptr; // Returns a null pointer if load error
+    }
+
+    _fontPathToFont[assetPath] = newFont;
+    return newFont; // Returns the new font
 }
 
 tmx::Map* AssetManager::loadMap(const char* assetPath) {

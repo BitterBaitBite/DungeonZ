@@ -13,7 +13,6 @@ class Villager : public Enemy {
 
         bool init(EnemyInfo* enemyInfo) override;
         void update(float deltaMilliseconds) override;
-        void render(sf::RenderWindow& window) override;
 
     private:
         // Animations
@@ -26,45 +25,30 @@ class Villager : public Enemy {
 
         // Attack
         const float TARGET_RANGE = 200.0f;
-        bool _hasCloseTarget { false };
         int _attackDamage { 1 };
+        sf::Clock _attackAnimationClock;
         sf::FloatRect _attackCollider { 0.f, 0.f, 0.f, 0.f };
 
+        void attack() override;
+        bool attackAnimation() override;
+        void resetAttackAnimation();
+        void setAttackCollider() override;
+        void checkAttackCollisions() override;
         void calcTargetPosition() override;
+        void checkPlayerCollision() override;
 
         // Render
         void debugSprite(sf::RenderWindow& window) override;
 
         // Movement
-        std::vector<sf::Vector2i> _pathToTarget;
-        sf::VertexArray _pathLine;
+        const float REPATH_TIME = 0.5f;
+        sf::Clock _repathClock;
         size_t _currentTarget = 0;
-        sf::Clock _pathClock;
+        bool _hasCloseTarget { false };
+        std::vector<sf::Vector2i> _pathToTarget;
+
         void move(float deltaMilliseconds) override;
         void getMoveDirection() override;
-
-        // Pathfinding
-        struct Node {
-            // Position coordinates
-            int x, y;
-
-            // gCost = path length
-            // hCost = distance from adjacent position to goal
-            // fCost = gCost + hCost (total cost)
-            float gCost, hCost, fCost;
-
-            // Parent node / origin node
-            Node* parent;
-
-            // Order by total cost
-            bool operator>(const Node& other) const {
-                return fCost > other.fCost;
-            }
-        };
-
-        std::vector<sf::Vector2i> getPath(
-            sf::Vector2i start,
-            sf::Vector2i goal,
-            std::array<std::array<bool, BACKGROUND_ROW_SIZE>, BACKGROUND_COL_SIZE>& grid
-        );
+        void resetPathToTarget();
+        void movePathToTarget(float deltaMilliseconds);
 };

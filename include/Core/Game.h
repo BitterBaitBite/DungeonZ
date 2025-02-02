@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <string>
 
+class MainMenu;
+
 namespace sf {
     class RenderWindow;
 }
@@ -30,5 +32,8 @@ class Game {
 
     private:
         sf::RenderWindow* _window { nullptr };
+        MainMenu* _mainMenu { nullptr };
         World* _world { nullptr };
+
+        bool _gameStarted { false };
 };

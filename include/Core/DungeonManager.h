@@ -4,11 +4,13 @@
 #include "Gameplay/Dungeon.h"
 #include "SFML/Graphics/Rect.hpp"
 
+class MainMenu;
+
 class DungeonManager {
     public:
         static DungeonManager* getInstance();
 
-        ~DungeonManager() = default;
+        ~DungeonManager();
 
     private:
         static DungeonManager* _instance;

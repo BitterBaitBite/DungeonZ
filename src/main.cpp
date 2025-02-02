@@ -1,8 +1,10 @@
 #include <cstdio>
 #include <Core/Game.h>
 #include <SFML/System/Clock.hpp>
-#include <Utils/Constants.h>
 
+#ifndef NDEBUG
+#define DEBUG_MODE
+#endif
 
 int main() {
     Game game;

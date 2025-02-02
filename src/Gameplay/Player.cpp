@@ -21,38 +21,44 @@ Player* Player::getInstance() {
     return _instance;
 }
 
-IDamageable* Player::getDamageable() {
-    if (_instance == nullptr) {
-        _instance = new Player();
+Player::~Player() {
+    if (_instance != nullptr) {
+        delete _instance;
+        _instance = nullptr;
     }
-
-    return _instance;
 }
 
 void Player::setPosition(const sf::Vector2f& newPosition) {
     GameObject::setPosition(newPosition);
     _sprite.setPosition(newPosition);
+    _fireSprite.setPosition({ newPosition.x + TILE_WIDTH / 2, newPosition.y + TILE_HEIGHT / 3 });
 }
 
-bool Player::init(const PlayerInfo& playerDescriptor) {
-    float posX = playerDescriptor.position.x - playerDescriptor.spriteWidth / 2;
-    float posY = playerDescriptor.position.y - playerDescriptor.spriteHeight / 2;
+bool Player::init(const PlayerInfo& playerInfo) {
+    float posX = playerInfo.position.x - playerInfo.spriteWidth / 2;
+    float posY = playerInfo.position.y - playerInfo.spriteHeight / 2;
     setPosition(sf::Vector2f(posX, posY));
-    _speed = playerDescriptor.speed;
+    _speed = playerInfo.speed;
 
-    _sprite.setTexture(*playerDescriptor.texture);
+    _sprite.setTexture(*playerInfo.texture);
+    _sprite.setScale(playerInfo.scale);
+    _spriteWidth = playerInfo.spriteWidth;
+    _spriteHeight = playerInfo.spriteHeight;
     _sprite.setTextureRect(sf::IntRect(0, 0, _spriteWidth, _spriteHeight));
-    _sprite.setScale(playerDescriptor.scale);
-    _spriteWidth = playerDescriptor.spriteWidth;
-    _spriteHeight = playerDescriptor.spriteHeight;
     _spriteColor = _sprite.getColor();
 
-    _maxHealth = playerDescriptor.maxHealth;
+    _fireSprite.setTexture(*playerInfo.fireTexture);
+    _fireSprite.setScale(playerInfo.scale);
+    _fireSpriteWidth = playerInfo.fireSpriteWidth;
+    _fireSpriteHeight = playerInfo.fireSpriteHeight;
+    _fireSprite.setTextureRect(sf::IntRect(0, 0, _fireSpriteWidth, _fireSpriteHeight));
+
+    _maxHealth = playerInfo.maxHealth;
     _currentHealth = _maxHealth;
 
     _playerCollider = {
-        playerDescriptor.position.x - TILE_WIDTH / 3,
-        playerDescriptor.position.y,
+        playerInfo.position.x - TILE_WIDTH / 3,
+        playerInfo.position.y,
         2 * TILE_WIDTH / 3,
         TILE_HEIGHT / 2
     };
@@ -74,6 +80,8 @@ void Player::update(float deltaMilliseconds) {
         _isInvulnerable = false;
     }
 
+    checkBurningState();
+
     getAttackInput();
     if (_isAttacking) {
         attack();
@@ -84,10 +92,22 @@ void Player::update(float deltaMilliseconds) {
     }
 }
 
-void Player::render(sf::RenderWindow& window) {
-    // TODO: render dead sprite
-    if (_isDead) return;
+void Player::renderFire(sf::RenderWindow& window) {
+    _sprite.setColor(sf::Color(255, 128, 0, 255));
 
+    sf::IntRect fireSpriteRect;
+    sf::Vector2f fireTilePosition { _currentFireTile.x * _fireSpriteWidth, _currentFireTile.y * _fireSpriteHeight };
+    fireSpriteRect = sf::IntRect(fireTilePosition.x, fireTilePosition.y, _fireSpriteWidth, _fireSpriteHeight);
+
+    sf::Color fireColor = _fireSprite.getColor();
+    fireColor.a = 128;
+    _fireSprite.setTextureRect(fireSpriteRect);
+    _fireSprite.setColor(fireColor);
+
+    window.draw(_fireSprite);
+}
+
+void Player::renderInvulnerable() {
     sf::Color spriteColor = _sprite.getColor();
     if (_isInvulnerable) {
         spriteColor.a = INVULNERABLE_ALPHA;
@@ -96,17 +116,19 @@ void Player::render(sf::RenderWindow& window) {
     else {
         _sprite.setColor(_spriteColor);
     }
+}
 
+void Player::renderPlayer(sf::RenderWindow& window) {
     sf::IntRect spriteRect = _sprite.getTextureRect();
     sf::Vector2f tilePosition { _currentTile.x * _spriteWidth, _currentTile.y * _spriteHeight };
 
     switch (_faceDirectionX) {
-        case FaceDirectionX::Left:
+        case DirectionX::Left:
             spriteRect =
                 sf::IntRect(tilePosition.x + _spriteWidth, tilePosition.y, -_spriteWidth, _spriteHeight);
             break;
 
-        case FaceDirectionX::Right:
+        case DirectionX::Right:
             spriteRect =
                 sf::IntRect(tilePosition.x, tilePosition.y, _spriteWidth, _spriteHeight);
             break;
@@ -117,8 +139,29 @@ void Player::render(sf::RenderWindow& window) {
 
     _sprite.setTextureRect(spriteRect);
     window.draw(_sprite);
+}
 
+void Player::render(sf::RenderWindow& window) {
+    if (_isDead) return;
+
+    // TODO: render dying sprite
+    if (_currentHealth <= 0) {
+        // renderDying();
+        // return;
+    }
+
+    renderInvulnerable();
+
+    renderPlayer(window);
+
+    if (_isBurning) {
+        renderFire(window);
+    }
+
+
+    #ifdef DEBUG_MODE
     debugSprite(window);
+    #endif
 }
 
 void Player::debugSprite(sf::RenderWindow& window) {
@@ -200,8 +243,8 @@ bool Player::attackAnimation() {
         setAttackCollider();
     }
 
-    if (_currentTile.x >= 6) {
-        _currentTile.x %= 6;
+    if (_currentTile.x >= MAX_ATTACK_TILES) {
+        _currentTile.x %= MAX_ATTACK_TILES;
         _isAttacking = false;
         animationFinished = true;
     }
@@ -294,11 +337,11 @@ void Player::getMoveInput() {
 void Player::setFacingDirection() {
     if (_direction.x > 0.0f) {
         _faceDirection = DirectionEnum::Right;
-        _faceDirectionX = FaceDirectionX::Right;
+        _faceDirectionX = DirectionX::Right;
     }
     else if (_direction.x < 0.0f) {
         _faceDirection = DirectionEnum::Left;
-        _faceDirectionX = FaceDirectionX::Left;
+        _faceDirectionX = DirectionX::Left;
     }
     else if (_direction.y > 0.0f) {
         _faceDirection = DirectionEnum::Down;
@@ -310,14 +353,36 @@ void Player::setFacingDirection() {
     }
 }
 
+void Player::checkBurningState() {
+    setFireAnimation();
+
+    if (_isBurning) {
+        if (_burningClock.getElapsedTime().asSeconds() < _burningTime) {
+            if (_burningTickClock.getElapsedTime().asSeconds() >= BURNING_TICK_DELAY) {
+                ReceiveDamage(_burningDamage);
+                _burningTickClock.restart();
+            }
+        }
+        else _isBurning = false;
+    }
+}
+
+void Player::setFireAnimation() {
+    printf("%f -> %i\n", FRAMES_PER_SECOND * _animationClock.getElapsedTime().asSeconds(), _currentFireTile.x);
+    _currentFireTile.x = FRAMES_PER_SECOND * _animationClock.getElapsedTime().asSeconds();
+    _currentFireTile.x %= 7;
+    _currentFireTile.y = 0;
+}
+
 void Player::setMoveAnimation() {
     _currentTile.x = FRAMES_PER_SECOND * _animationClock.getElapsedTime().asSeconds();
-    _currentTile.x %= MAX_TILE_FRAMES;
 
     if (_isMoving) {
+        _currentTile.x %= MAX_MOVEMENT_TILES;
         _currentTile.y = RUN_ROW;
     }
     else {
+        _currentTile.x %= MAX_IDLE_TILES;
         _currentTile.y = IDLE_ROW;
     }
 }
@@ -357,6 +422,7 @@ void Player::setMovePosition(float deltaMilliseconds) {
     _playerCollider.top += velocity.y;
 
     _sprite.setPosition(_position);
+    _fireSprite.setPosition({ _position.x + TILE_WIDTH / 2, _position.y + TILE_HEIGHT / 3 });
 }
 
 void Player::WarpPosition() {
@@ -430,6 +496,21 @@ int Player::GetMaxHealth() const {
     return _maxHealth;
 }
 
+void Player::ReceiveDamage(int damageAmount) {
+    if (_isDead || _isInvulnerable) return;
+
+    AddHealth(-abs(damageAmount));
+
+    if (_currentHealth == 0) {
+        _isDead = true;
+        return;
+    }
+
+    _sprite.setColor(_damageColor);
+    _isInvulnerable = true;
+    _invulnerabilityClock.restart();
+}
+
 void Player::ReceiveDamage(sf::FloatRect otherCollider, int damageAmount) {
     if (_isDead || _isInvulnerable) return;
 
@@ -445,4 +526,12 @@ void Player::ReceiveDamage(sf::FloatRect otherCollider, int damageAmount) {
     _sprite.setColor(_damageColor);
     _isInvulnerable = true;
     _invulnerabilityClock.restart();
+}
+
+void Player::setInFire(float burningTime, int burningDamage) {
+    _burningClock.restart();
+    _burningTickClock.restart();
+    _isBurning = true;
+    _burningTime = burningTime;
+    _burningDamage = burningDamage;
 }

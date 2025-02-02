@@ -11,7 +11,7 @@ namespace sf {
     class Clock;
 }
 
-enum class FaceDirectionX;
+enum class DirectionX;
 
 class Enemy : public GameObject, public IDamageable {
     public:
@@ -30,7 +30,7 @@ class Enemy : public GameObject, public IDamageable {
 
         ~Enemy() override = default;
 
-        virtual bool init(EnemyInfo* enemyDescriptor);
+        virtual bool init(EnemyInfo* enemyInfo);
         void update(float deltaMilliseconds) override;
         void render(sf::RenderWindow& window) override;
         virtual void debugSprite(sf::RenderWindow& window);
@@ -50,7 +50,7 @@ class Enemy : public GameObject, public IDamageable {
         float _spriteHeight { .0f };
 
         // Attacks
-        const int DEFAULT_TILE_ROW = 2;
+        const int D_SPRITE_ATTACK_ROW = 2;
         bool _isAttacking { false };
         int _collisionDamage = 1;
         sf::Vector2f _targetPosition { 0, 0 };
@@ -64,7 +64,7 @@ class Enemy : public GameObject, public IDamageable {
         sf::Clock _animationClock;
         sf::Vector2u _currentTile { 0, 0 };
         DirectionEnum _faceDirection { 0 };
-        FaceDirectionX _faceDirectionX { 0 };
+        DirectionX _faceDirectionX { 0 };
         FaceDirectionY _faceDirectionY { 0 };
 
         // Patrol
@@ -90,16 +90,18 @@ class Enemy : public GameObject, public IDamageable {
         virtual void getMoveDirection();
         void setFacingDirection();
         virtual void setMoveAnimation();
-        void setMovePosition(float deltaMilliseconds);
+        virtual void setMovePosition(float deltaMilliseconds);
         void setPosition(const sf::Vector2f& newPosition) override;
 
         // Attack
-        virtual void attack(float deltaMilliseconds);
-        virtual void attackAnimation();
+        virtual void attack() {}
+        virtual bool attackAnimation() { return false; }
+        virtual void setAttackCollider() {}
+        virtual void checkAttackCollisions() {};
         virtual void calcTargetPosition();
 
         // Collisions
-        void checkPlayerCollision();
+        virtual void checkPlayerCollision();
         void getNextCollisionBounds(sf::Vector2f velocity, sf::FloatRect& nextBounds);
 
         // Damageable
@@ -114,6 +116,7 @@ class Enemy : public GameObject, public IDamageable {
         bool IsDead() const override { return _isDead; }
         int GetHealth() const override;
         int GetMaxHealth() const override;
+        void ReceiveDamage(int damageAmount) override;
         void ReceiveDamage(sf::FloatRect otherCollider, int damageAmount) override;
         void DoDamage(IDamageable* damageable, int damageAmount);
 

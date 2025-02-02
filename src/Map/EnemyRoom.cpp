@@ -3,6 +3,7 @@
 #include <Assets/SpriteSheet.h>
 
 #include "Core/AssetManager.h"
+#include "Core/WindowManager.h"
 #include "Enums/EnemyType.h"
 #include "Gameplay/TorchGoblin.h"
 #include "Gameplay/Villager.h"
@@ -168,13 +169,19 @@ TorchGoblin::TorchGoblinInfo EnemyRoom::getTorchGoblinInfo() {
     TorchGoblin::TorchGoblinInfo torchGoblinInfo;
     sf::Texture* enemyTexture = AssetManager::getInstance()->loadTexture(enemySpriteSheet->getPath());
     torchGoblinInfo.texture = enemyTexture;
-    torchGoblinInfo.speed = { 100.f * MILLISECONDS_TO_SECONDS, 100.f * MILLISECONDS_TO_SECONDS };
-    torchGoblinInfo.spriteHeight = enemyTexture->getSize().y / enemySpriteSheet->getRows() * torchGoblinInfo.scale.y;
-
-    torchGoblinInfo.spriteWidth = enemyTexture->getSize().x / enemySpriteSheet->getCols() * torchGoblinInfo.scale.x;
-
+    torchGoblinInfo.speed = { 80.f * MILLISECONDS_TO_SECONDS, 80.f * MILLISECONDS_TO_SECONDS };
+    torchGoblinInfo.position = {
+        WindowManager::getInstance()->getWindowCenter().x - TILE_WIDTH * 2,
+        WindowManager::getInstance()->getWindowCenter().y
+    };
+    torchGoblinInfo.spriteHeight = torchGoblinInfo.texture->getSize().y / enemySpriteSheet->getRows() * torchGoblinInfo.
+        scale.y;
+    torchGoblinInfo.spriteWidth = torchGoblinInfo.texture->getSize().x / enemySpriteSheet->getCols() * torchGoblinInfo.
+        scale.x;
     torchGoblinInfo.maxHealth = 5;
     torchGoblinInfo.attackDamage = 1;
+    torchGoblinInfo.fireDamage = 1;
+    torchGoblinInfo.fireDuration = 3.f;
 
     return torchGoblinInfo;
 }

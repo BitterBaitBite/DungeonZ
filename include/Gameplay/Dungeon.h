@@ -15,24 +15,13 @@ class Dungeon {
         Dungeon();
         ~Dungeon();
 
-        Room* getCurrentRoom() const {
-            if (_currentRoom.x < 0
-                || _currentRoom.y < 0
-                || _currentRoom.x >= DUNGEON_ROOMS
-                || _currentRoom.y >= DUNGEON_ROOMS
-            ) {
-                return nullptr;
-            }
-
-            return _rooms[_currentRoom.x][_currentRoom.y];
-        }
-
-        const sf::Vector2i getRoomPosition() const { return _currentRoom; }
 
         void init();
         void render(sf::RenderWindow& window);
         void update(float deltaMilliseconds);
 
+        const sf::Vector2i getRoomPosition() const { return _currentRoom; }
+        Room* getCurrentRoom() const;
         bool HasRoom(int row, int col) const;
         bool HasAdjacentRoom(int row, int col);
         bool HasAdjacentRoom(DirectionEnum direction) const;

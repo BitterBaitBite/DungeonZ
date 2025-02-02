@@ -65,7 +65,12 @@ std::vector<sf::Vector2i> Pathfinding::getPath(
         // Checks all adjacent nodes
         for (const auto& adjacent : adjacents) {
             // Ignores collision or non existent nodes
-            if (grid[adjacent.y][adjacent.x]) continue;
+            if (adjacent.x < 0
+                || adjacent.x >= BACKGROUND_ROW_SIZE
+                || adjacent.y < 0
+                || adjacent.y >= BACKGROUND_COL_SIZE
+                || grid[adjacent.y][adjacent.x])
+                continue;
 
             // Updates the costs (gCost = path length / hCost = distance from adjacent position to goal / fCost = gCost + hCost (total cost)
             float gCost = current.gCost + 1;

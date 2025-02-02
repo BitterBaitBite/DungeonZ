@@ -11,6 +11,12 @@ WindowManager* WindowManager::getInstance() {
     return _instance;
 }
 
+WindowManager::~WindowManager() {
+    delete _window;
+
+    delete _instance;
+}
+
 sf::RenderWindow* WindowManager::loadWindow() {
     if (_window == nullptr) {
         _window = new sf::RenderWindow(

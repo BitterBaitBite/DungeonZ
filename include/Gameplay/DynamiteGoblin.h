@@ -2,9 +2,9 @@
 #include "Enemy.h"
 
 // TODO
-class TNTGoblin : Enemy {
+class DynamiteGoblin : Enemy {
     public:
-        struct TNTGoblinInfo : EnemyInfo {
+        struct DynamiteGoblinInfo : EnemyInfo {
             int attackDamage { 1 };
         };
 

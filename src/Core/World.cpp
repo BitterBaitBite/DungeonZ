@@ -1,7 +1,6 @@
 #include <map>
 #include <Core/AssetManager.h>
 #include <Core/World.h>
-#include <SFML/Graphics/RenderWindow.hpp>
 #include <tmxlite/Map.hpp>
 
 #include "Assets/SpriteSheet.h"
@@ -12,65 +11,16 @@
 #include "Render/SFMLOrthogonalLayer.h"
 
 World::~World() {
-    delete _enemyTest;
-    delete _player;
     delete _currentDungeon;
 }
 
+
 bool World::load() {
-    sf::RenderWindow* window = WindowManager::getInstance()->loadWindow();
-    auto windowCenterPosition = sf::Vector2f(window->getSize().x / 2.f, window->getSize().y / 2.f);
-
-
     // Load current dungeon (level)
     _currentDungeon = DungeonManager::getInstance()->loadDungeon();
 
-    // //----------------- PLAYER TEST ---------------------
-    // // TO DO read from file
-    // Player texture data: (texture path, rows, cols)
-    SpriteSheet::SheetDescriptor playerSheetDesc;
-    playerSheetDesc.path = "../Data/Images/Player/Warrior_Blue.png";
-    playerSheetDesc.rows = 8;
-    playerSheetDesc.cols = 6;
-    auto playerSpriteSheet = new SpriteSheet(playerSheetDesc);
-
-    // Player object data: (texture
-    Player::PlayerInfo playerDesc;
-    sf::Texture* playerTexture = AssetManager::getInstance()->loadTexture(playerSpriteSheet->getPath());
-    playerDesc.texture = playerTexture;
-    playerDesc.position = windowCenterPosition;
-    playerDesc.speed = { 400.f * MILLISECONDS_TO_SECONDS, 400.f * MILLISECONDS_TO_SECONDS };
-    playerDesc.spriteHeight = (playerDesc.texture->getSize().y / playerSpriteSheet->getRows()) * playerDesc.scale.y;
-    playerDesc.spriteWidth = (playerDesc.texture->getSize().x / playerSpriteSheet->getCols()) * playerDesc.scale.x;
-    playerDesc.maxHealth = 10;
-
-    const bool playerOk = Player::getInstance()->init(playerDesc);
-    //--------------------------------------------------
-
-    // Enemy test --------------------------->
-    SpriteSheet::SheetDescriptor enemySheetDesc;
-    enemySheetDesc.path = "../Data/Images/Enemies/Pawn_Red.png";
-    enemySheetDesc.rows = 6;
-    enemySheetDesc.cols = 6;
-    auto enemySpriteSheet = new SpriteSheet(enemySheetDesc);
-
-    Villager::VillagerInfo villagerInfo;
-    sf::Texture* enemyTexture = AssetManager::getInstance()->loadTexture(enemySpriteSheet->getPath());
-    villagerInfo.texture = enemyTexture;
-    villagerInfo.speed = { 100.f * MILLISECONDS_TO_SECONDS, 100.f * MILLISECONDS_TO_SECONDS };
-    villagerInfo.position = { windowCenterPosition.x - TILE_WIDTH * 2, windowCenterPosition.y };
-    villagerInfo.spriteHeight = villagerInfo.texture->getSize().y / enemySpriteSheet->getRows() * villagerInfo.scale.y;
-    villagerInfo.spriteWidth = villagerInfo.texture->getSize().x / enemySpriteSheet->getCols() * villagerInfo.scale.x;
-    villagerInfo.maxHealth = 3;
-    villagerInfo.attackDamage = 2;
-    _enemyTest = new Villager();
-    bool enemyOk = _enemyTest->init(&villagerInfo);
-
-    // <------------------------ End enemy test
-
-
-    return enemyOk && playerOk;
-    // return playerOk;
+    // Load player
+    return loadPlayer();
 }
 
 void World::update(uint32_t deltaMilliseconds) {
@@ -79,8 +29,6 @@ void World::update(uint32_t deltaMilliseconds) {
 
     // Player
     Player::getInstance()->update(deltaMilliseconds);
-
-    _enemyTest->update(deltaMilliseconds);
 }
 
 void World::render(sf::RenderWindow& window) {
@@ -89,6 +37,35 @@ void World::render(sf::RenderWindow& window) {
 
     // Player
     Player::getInstance()->render(window);
+}
 
-    _enemyTest->render(window);
+bool World::loadPlayer() {
+    SpriteSheet::SheetDescriptor playerSheetDesc;
+    playerSheetDesc.path = "../Data/Images/Player/Warrior_Blue.png";
+    playerSheetDesc.rows = 8;
+    playerSheetDesc.cols = 6;
+    auto playerSpriteSheet = new SpriteSheet(playerSheetDesc);
+    sf::Texture* playerTexture = AssetManager::getInstance()->loadTexture(playerSpriteSheet->getPath());
+
+    SpriteSheet::SheetDescriptor fireSheetDesc;
+    fireSheetDesc.path = "../Data/Images/Effects/Fire.png";
+    fireSheetDesc.rows = 1;
+    fireSheetDesc.cols = 7;
+    auto fireSpriteSheet = new SpriteSheet(fireSheetDesc);
+    sf::Texture* fireTexture = AssetManager::getInstance()->loadTexture(fireSpriteSheet->getPath());
+
+    Player::PlayerInfo playerDesc;
+    playerDesc.texture = playerTexture;
+    playerDesc.fireTexture = fireTexture;
+    playerDesc.position = WindowManager::getInstance()->getWindowCenter();
+    playerDesc.speed = { 400.f * MILLISECONDS_TO_SECONDS, 400.f * MILLISECONDS_TO_SECONDS };
+    playerDesc.spriteHeight = playerDesc.texture->getSize().y / playerSpriteSheet->getRows() * playerDesc.scale.y;
+    playerDesc.spriteWidth = playerDesc.texture->getSize().x / playerSpriteSheet->getCols() * playerDesc.scale.x;
+    playerDesc.fireSpriteHeight = playerDesc.fireTexture->getSize().y / fireSpriteSheet->getRows() * playerDesc.scale.y;
+    playerDesc.fireSpriteWidth = playerDesc.fireTexture->getSize().x / fireSpriteSheet->getCols() * playerDesc.scale.x;
+    playerDesc.maxHealth = 10;
+
+    const bool playerOk = Player::getInstance()->init(playerDesc);
+
+    return playerOk;
 }

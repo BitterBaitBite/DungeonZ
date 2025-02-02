@@ -44,6 +44,18 @@ void Dungeon::init() {
     }
 }
 
+Room* Dungeon::getCurrentRoom() const {
+    if (_currentRoom.x < 0
+        || _currentRoom.y < 0
+        || _currentRoom.x >= DUNGEON_ROOMS
+        || _currentRoom.y >= DUNGEON_ROOMS
+    ) {
+        return nullptr;
+    }
+
+    return _rooms[_currentRoom.x][_currentRoom.y];
+}
+
 Room* createRoom(RoomType type) {
     switch (type) {
         case RoomType::EnemyRoom: {

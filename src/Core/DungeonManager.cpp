@@ -14,6 +14,11 @@ DungeonManager* DungeonManager::getInstance() {
     return _instance;
 }
 
+DungeonManager::~DungeonManager() {
+    delete _dungeon;
+    delete _instance;
+}
+
 Dungeon* DungeonManager::loadDungeon() {
     if (_dungeon == nullptr) {
         _dungeon = new Dungeon();

@@ -10,26 +10,25 @@
 #include "Utils/Random.h"
 #include "Utils/Vector.h"
 
-bool Enemy::init(EnemyInfo* enemyDescriptor) {
-    float posX = enemyDescriptor->position.x - enemyDescriptor->spriteWidth / 2;
-    float posY = enemyDescriptor->position.y - enemyDescriptor->spriteHeight / 2;
+bool Enemy::init(EnemyInfo* enemyInfo) {
+    float posX = enemyInfo->position.x - enemyInfo->spriteWidth / 2;
+    float posY = enemyInfo->position.y - enemyInfo->spriteHeight / 2;
     setPosition(sf::Vector2f(posX, posY));
-    _speed = enemyDescriptor->speed;
+    _speed = enemyInfo->speed;
 
-
-    _sprite.setScale(enemyDescriptor->scale);
-    _sprite.setTexture(*enemyDescriptor->texture);
+    _sprite.setScale(enemyInfo->scale);
+    _sprite.setTexture(*enemyInfo->texture);
     _sprite.setTextureRect(sf::IntRect(0, 0, _spriteWidth, _spriteHeight));
-    _spriteWidth = enemyDescriptor->spriteWidth;
-    _spriteHeight = enemyDescriptor->spriteHeight;
+    _spriteWidth = enemyInfo->spriteWidth;
+    _spriteHeight = enemyInfo->spriteHeight;
     _spriteColor = _sprite.getColor();
 
-    _maxHealth = enemyDescriptor->maxHealth;
+    _maxHealth = enemyInfo->maxHealth;
     _currentHealth = _maxHealth;
 
     _enemyCollider = {
-        enemyDescriptor->position.x - TILE_WIDTH / 2,
-        enemyDescriptor->position.y - TILE_HEIGHT / 2,
+        enemyInfo->position.x - TILE_WIDTH / 2,
+        enemyInfo->position.y - TILE_HEIGHT / 2,
         TILE_WIDTH,
         TILE_HEIGHT
     };
@@ -70,12 +69,12 @@ void Enemy::render(sf::RenderWindow& window) {
     sf::Vector2f tilePosition { _currentTile.x * _spriteWidth, _currentTile.y * _spriteHeight };
 
     switch (_faceDirectionX) {
-        case FaceDirectionX::Left:
+        case DirectionX::Left:
             spriteRect =
                 sf::IntRect(tilePosition.x + _spriteWidth, tilePosition.y, -_spriteWidth, _spriteHeight);
             break;
 
-        case FaceDirectionX::Right:
+        case DirectionX::Right:
             spriteRect =
                 sf::IntRect(tilePosition.x, tilePosition.y, _spriteWidth, _spriteHeight);
             break;
@@ -87,7 +86,9 @@ void Enemy::render(sf::RenderWindow& window) {
     _sprite.setTextureRect(spriteRect);
     window.draw(_sprite);
 
+    #ifdef DEBUG_MODE
     debugSprite(window);
+    #endif
 }
 
 void Enemy::debugSprite(sf::RenderWindow& window) {
@@ -108,17 +109,8 @@ void Enemy::debugSprite(sf::RenderWindow& window) {
     collisionRect.setOutlineThickness(2.f);
     collisionRect.setFillColor(sf::Color::Transparent);
 
-    // Attack collider
-    // sf::RectangleShape attackRect(sf::Vector2f(_attackCollider.width, _attackCollider.height));
-    //
-    // attackRect.setPosition(_attackCollider.left, _attackCollider.top);
-    // attackRect.setOutlineColor(sf::Color::Magenta);
-    // attackRect.setOutlineThickness(2.f);
-    // attackRect.setFillColor(sf::Color::Transparent);
-
     window.draw(boundsRect);
     window.draw(collisionRect);
-    // window.draw(attackRect);
 }
 
 void Enemy::setPosition(const sf::Vector2f& newPosition) {
@@ -178,11 +170,11 @@ void Enemy::getMoveDirection() {
 void Enemy::setFacingDirection() {
     if (_direction.x > 0.0f) {
         _faceDirection = DirectionEnum::Right;
-        _faceDirectionX = FaceDirectionX::Right;
+        _faceDirectionX = DirectionX::Right;
     }
     else if (_direction.x < 0.0f) {
         _faceDirection = DirectionEnum::Left;
-        _faceDirectionX = FaceDirectionX::Left;
+        _faceDirectionX = DirectionX::Left;
     }
     else if (_direction.y > 0.0f) {
         _faceDirection = DirectionEnum::Down;
@@ -236,19 +228,19 @@ void Enemy::setMovePosition(float deltaMilliseconds) {
     _sprite.setPosition(_position);
 }
 
-void Enemy::attack(float deltaMilliseconds) {
-    attackAnimation();
-}
-
-void Enemy::attackAnimation() {}
-
 void Enemy::calcTargetPosition() {
-    _targetPosition = Player::getInstance()->getPosition();
+    Player* player = Player::getInstance();
+    if (player->IsDead()) {
+        _targetPosition = { -1, -1 };
+        return;
+    }
+
+    _targetPosition = player->getPosition();
 }
 
 void Enemy::checkPlayerCollision() {
     if (CollisionManager::getInstance()->hasPlayerCollision(_enemyCollider)) {
-        DoDamage(Player::getDamageable(), _collisionDamage);
+        DoDamage(Player::getInstance(), _collisionDamage);
     }
 }
 
@@ -270,6 +262,21 @@ int Enemy::GetHealth() const {
 
 int Enemy::GetMaxHealth() const {
     return _maxHealth;
+}
+
+void Enemy::ReceiveDamage(int damageAmount) {
+    if (_isDead || _isInvulnerable) return;
+
+    AddHealth(-abs(damageAmount));
+
+    if (_currentHealth == 0) {
+        _isDead = true;
+        return;
+    }
+
+    _sprite.setColor(_damageColor);
+    _isInvulnerable = true;
+    _invulnerabilityClock.restart();
 }
 
 void Enemy::ReceiveDamage(sf::FloatRect otherCollider, int damageAmount) {
