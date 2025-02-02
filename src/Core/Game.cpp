@@ -55,7 +55,8 @@ void Game::update(uint32_t deltaTime) {
     }
 
     _uiManager->update(*_window, deltaTime);
-    if (_uiManager->HasPressedRestart() || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+    if (_uiManager->HasFinished() || _uiManager->HasPressedRestart() ||
+        sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
         reset();
     }
 }

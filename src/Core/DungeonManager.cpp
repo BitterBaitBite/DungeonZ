@@ -2,6 +2,7 @@
 
 #include "Core/WindowManager.h"
 #include "Enums/DirectionEnum.h"
+#include "Gameplay/Player.h"
 #include "SFML/Graphics/Rect.hpp"
 
 DungeonManager* DungeonManager::_instance { nullptr };

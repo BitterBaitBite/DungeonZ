@@ -18,7 +18,6 @@
  <tileset firstgid="223" source="../../Maps/Tilesets/water_foam.tsx"/>
  <tileset firstgid="295" source="../../Maps/Tilesets/grass_terrain.tsx"/>
  <tileset firstgid="335" source="../../Maps/Tilesets/props.tsx"/>
- <tileset firstgid="335" source="../Props.tsx"/>
  <layer id="1" name="Background" width="13" height="11">
   <data encoding="csv">
 1,1,1,1,1,1,1,1,1,1,1,1,1,
