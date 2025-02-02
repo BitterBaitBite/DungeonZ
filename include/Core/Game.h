@@ -31,8 +31,9 @@ class Game {
 
         bool isRunning() const;
 
-        void update(uint32_t deltaMilliseconds);
+        void update(uint32_t deltaTime);
         void render();
+        void reset();
 
     private:
         sf::RenderWindow* _window { nullptr };

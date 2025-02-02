@@ -1,8 +1,6 @@
 #include "Map/Room.h"
 
 #include <bitset>
-#include <map>
-#include <map>
 
 #include "Core/AssetManager.h"
 #include "Enums/DirectionEnum.h"
@@ -25,10 +23,10 @@ Room::~Room() {
     }
 }
 
-void Room::update(float deltaMilliseconds) {
+void Room::update(uint32_t deltaTime) {
     for (MapLayer* layer : _layers) {
         if (layer != nullptr) {
-            layer->update(sf::milliseconds(deltaMilliseconds));
+            layer->update(sf::milliseconds(deltaTime));
         }
     }
 }

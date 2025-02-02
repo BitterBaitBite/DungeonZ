@@ -2,10 +2,6 @@
 #include <Core/Game.h>
 #include <SFML/System/Clock.hpp>
 
-#ifndef NDEBUG
-#define DEBUG_MODE
-#endif
-
 int main() {
     Game game;
     const bool gameInitialized = game.init();

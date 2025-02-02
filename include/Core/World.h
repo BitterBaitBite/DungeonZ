@@ -1,10 +1,10 @@
 #pragma once
 
-#include <tmxlite/FreeFuncs.hpp>
 #include <tmxlite/Map.hpp>
 
-#include "Gameplay/Dungeon.h"
+#include "Assets/SpriteSheet.h"
 #include "Gameplay/Player.h"
+#include "Map/Dungeon.h"
 
 class Background;
 class Room;
@@ -22,6 +22,12 @@ class World {
         bool load();
         void update(uint32_t deltaMilliseconds);
         void render(sf::RenderWindow& window);
+        void reset();
+        void getPlayerSpriteInfo(SpriteSheet*& playerSpriteSheet, sf::Texture*& playerTexture);
+        void getPlayerFireSpriteInfo(SpriteSheet*& fireSpriteSheet, sf::Texture*& fireTexture);
+        void setPlayerInfo(SpriteSheet* playerSpriteSheet, sf::Texture* playerTexture, SpriteSheet* fireSpriteSheet,
+                           sf::Texture* fireTexture, Player::PlayerInfo& playerInfo);
+        void getPlayerInfo(Player::PlayerInfo& playerInfo);
 
     private:
         Dungeon* _currentDungeon { nullptr }; // Dungeon = Level

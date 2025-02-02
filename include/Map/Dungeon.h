@@ -13,12 +13,14 @@ namespace sf {
 class Dungeon {
     public:
         Dungeon();
+        void clearDungeon();
         ~Dungeon();
 
 
         void init();
         void render(sf::RenderWindow& window);
         void update(float deltaMilliseconds);
+        void reset();
 
         const sf::Vector2i getRoomPosition() const { return _currentRoom; }
         Room* getCurrentRoom() const;
@@ -28,6 +30,8 @@ class Dungeon {
         bool HasAdjacentRoom(int row, int col, DirectionEnum direction) const;
         std::vector<DirectionEnum> GetAdjacentRooms(int row, int col) const;
         bool moveTo(DirectionEnum direction);
+
+        sf::Vector2i getEnemyCount() const;
 
     private:
         sf::Vector2i _currentRoom { 0, 0 };

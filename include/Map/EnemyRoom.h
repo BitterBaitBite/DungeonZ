@@ -14,7 +14,7 @@ class EnemyRoom : public Room {
 
         void init(std::vector<DirectionEnum> adjacentRooms) override;
         void clearDeadEnemies();
-        void update(float deltaMilliseconds) override;
+        void update(uint32_t deltaTime) override;
         void render(sf::RenderWindow& window) override;
 
     protected:
@@ -27,6 +27,7 @@ class EnemyRoom : public Room {
         TorchGoblin::TorchGoblinInfo* getTorchGoblinInfo();
 
     public:
-        uint8_t getTotalEnemies() const { return _enemyPool.size(); }
+        auto getTotalEnemies() const { return _enemyPool.size(); }
+        auto getCurrentEnemies() const { return _activeEnemies.size(); }
         std::vector<Enemy*> getActiveEnemies() const { return _activeEnemies; }
 };

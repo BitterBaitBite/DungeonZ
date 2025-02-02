@@ -1,4 +1,4 @@
-#include "Gameplay/Dungeon.h"
+#include "Map/Dungeon.h"
 
 #include <iostream>
 #include <random>
@@ -19,7 +19,7 @@ Dungeon::Dungeon() {
     InitializeRooms();
 }
 
-Dungeon::~Dungeon() {
+void Dungeon::clearDungeon() {
     for (int i = 0; i < DUNGEON_ROOMS; i++) {
         for (int j = 0; j < DUNGEON_ROOMS; j++) {
             delete _rooms[i][j];
@@ -28,12 +28,25 @@ Dungeon::~Dungeon() {
     }
 }
 
+Dungeon::~Dungeon() {
+    clearDungeon();
+}
+
 void Dungeon::render(sf::RenderWindow& window) {
     _rooms[_currentRoom.x][_currentRoom.y]->render(window);
 }
 
 void Dungeon::update(float deltaMilliseconds) {
     _rooms[_currentRoom.x][_currentRoom.y]->update(deltaMilliseconds);
+}
+
+void Dungeon::reset() {
+    clearDungeon();
+    init();
+
+    GenerateRooms();
+    DebugDungeon();
+    InitializeRooms();
 }
 
 void Dungeon::init() {
@@ -255,4 +268,20 @@ bool Dungeon::moveTo(DirectionEnum direction) {
 
     DebugDungeon();
     return false;
+}
+
+// Gets a vector with x = active enemies / y = total enemies
+sf::Vector2i Dungeon::getEnemyCount() const {
+    sf::Vector2i enemyCount(0, 0);
+    for (int i = 0; i < DUNGEON_ROOMS; i++) {
+        for (int j = 0; j < DUNGEON_ROOMS; j++) {
+            auto enemyRoom = dynamic_cast<EnemyRoom*>(_rooms[i][j]);
+            if (enemyRoom == nullptr) continue;
+
+            enemyCount.x += enemyRoom->getCurrentEnemies();
+            enemyCount.y += enemyRoom->getTotalEnemies();
+        }
+    }
+
+    return enemyCount;
 }

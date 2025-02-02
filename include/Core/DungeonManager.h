@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Enums/Difficulty.h"
-#include "Gameplay/Dungeon.h"
+#include "Map/Dungeon.h"
 #include "SFML/Graphics/Rect.hpp"
 
 class MainMenu;

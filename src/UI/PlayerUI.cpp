@@ -26,31 +26,41 @@ PlayerUI::PlayerUI() {
     _maxHealthUI.setPosition(position);
 }
 
-bool PlayerUI::load() {
-    // Load font
-    _font = AssetManager::getInstance()->loadFont("../Data/Fonts/Jacquard12-Regular.ttf");
-    if (_font == nullptr) return false;
-
+void PlayerUI::setDeathText(float& textPosX, float& textPosY) {
     _deathText.setFont(*_font);
     _deathText.setString("You're dead!");
     _deathText.setCharacterSize(80);
     _deathText.setFillColor(sf::Color::Red);
     _deathText.setOutlineColor(sf::Color::Black);
     _deathText.setOutlineThickness(1.f);
-    float textPosX =
-        _maxHealthUI.getPosition().x + _maxHealthUI.getSize().x / 2 - _deathText.getGlobalBounds().width / 2;
-    float textPosY = BACKGROUND_COL_SIZE * TILE_HEIGHT / 2 - _deathText.getGlobalBounds().height;
+    textPosX = _maxHealthUI.getPosition().x + _maxHealthUI.getSize().x / 2 - _deathText.getGlobalBounds().width / 2;
+    textPosY = BACKGROUND_COL_SIZE * TILE_HEIGHT / 2 - _deathText.getGlobalBounds().height;
     _deathText.setPosition({ textPosX, textPosY });
+}
 
+void PlayerUI::setRestartText(float& textPosX, float textPosY) {
     _restartText.setFont(*_font);
     _restartText.setString("Press SPACE to continue...");
     _restartText.setCharacterSize(50);
-    _restartText.setFillColor(sf::Color::Red);
-    _restartText.setOutlineColor(sf::Color::Black);
+    _restartText.setFillColor(sf::Color(255, 0, 0, 0));
+    _restartText.setOutlineColor(sf::Color(0, 0, 0, 0));
     _restartText.setOutlineThickness(1.f);
     textPosX =
         _maxHealthUI.getPosition().x + _maxHealthUI.getSize().x / 2 - _restartText.getGlobalBounds().width / 2;
     _restartText.setPosition({ textPosX, textPosY + _deathText.getGlobalBounds().height * 2 });
+}
+
+bool PlayerUI::load() {
+    // Load font
+    _font = AssetManager::getInstance()->loadFont("../Data/Fonts/Jacquard12-Regular.ttf");
+    if (_font == nullptr) return false;
+
+    float textPosX;
+    float textPosY;
+    setDeathText(textPosX, textPosY);
+    setRestartText(textPosX, textPosY);
+
+    return true;
 }
 
 void PlayerUI::update(float deltaMilliseconds) {
@@ -63,19 +73,22 @@ void PlayerUI::update(float deltaMilliseconds) {
     }
 
     sf::Color color = _restartText.getFillColor();
+    sf::Color outlineColor = _restartText.getOutlineColor();
     if (_restartTextAlpha) {
-        color.a = std::clamp<uint8_t>(color.a - 2, 0, 255);
+        color.a = std::clamp<uint8_t>(color.a - 1, 0, 255);
+        outlineColor.a = color.a;
         if (color.a <= 0) _restartTextAlpha = false;
     }
     else {
-        color.a = std::clamp<uint8_t>(color.a + 2, 0, 255);
+        color.a = std::clamp<uint8_t>(color.a + 1, 0, 255);
+        outlineColor.a = color.a;
         if (color.a >= 255) _restartTextAlpha = true;
     }
     _restartText.setFillColor(color);
+    _restartText.setOutlineColor(outlineColor);
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-        // TODO: go to main menu
-        printf("Space pressed\n");
+    if (!_hasPressedRestart && sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+        _hasPressedRestart = true;
     }
 
     float maxWidth = _maxHealthUI.getSize().x;
@@ -105,4 +118,11 @@ void PlayerUI::render(sf::RenderWindow& window) {
 
     window.draw(_currentHealthUI);
     window.draw(_maxHealthUI);
+}
+
+void PlayerUI::reset() {
+    _isDead = false;
+    _hasDelayStarted = false;
+    _restartTextAlpha = true;
+    _hasPressedRestart = false;
 }

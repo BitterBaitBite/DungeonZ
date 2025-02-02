@@ -14,7 +14,7 @@ enum class DirectionX {
     Left,
 };
 
-enum class FaceDirectionY {
+enum class DirectionY {
     Down,
     Up,
 };

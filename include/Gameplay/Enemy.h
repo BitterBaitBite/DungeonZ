@@ -65,7 +65,7 @@ class Enemy : public GameObject, public IDamageable {
         sf::Vector2u _currentTile { 0, 0 };
         DirectionEnum _faceDirection { 0 };
         DirectionX _faceDirectionX { 0 };
-        FaceDirectionY _faceDirectionY { 0 };
+        DirectionY _faceDirectionY { 0 };
 
         // Patrol
         const float MAX_PATROL_TIME { 1.5f };

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="left-up" width="13" height="11" tilewidth="64" tileheight="64" infinite="0" nextlayerid="14" nextobjectid="49">
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="left-up" width="13" height="11" tilewidth="64" tileheight="64" infinite="0" nextlayerid="14" nextobjectid="50">
  <tileset firstgid="1" source="../Tilesets/water_base.tsx"/>
  <tileset firstgid="2" source="../Tilesets/water_foam.tsx"/>
  <tileset firstgid="74" source="../Tilesets/grass_terrain.tsx"/>
@@ -8,7 +8,7 @@
  <tileset firstgid="178" source="../Tilesets/water_rocks_02.tsx"/>
  <tileset firstgid="210" source="../Tilesets/water_rocks_01.tsx"/>
  <tileset firstgid="242" source="../Tilesets/rock_terrain.tsx"/>
- <tileset firstgid="274" source="../Tilesets/props.tsx"/>
+ <tileset firstgid="274" source="../../UI/Props.tsx"/>
  <layer id="1" name="Background" width="13" height="11">
   <data encoding="csv">
 1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -86,7 +86,7 @@
  </layer>
  <layer id="6" name="Rocks" width="13" height="11">
   <data encoding="csv">
-131,0,0,0,0,0,0,0,0,130,131,0,0,
+131,0,0,0,0,0,0,0,0,130,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,178,
 0,0,0,0,0,0,0,0,0,0,0,0,194,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -101,9 +101,9 @@
  </layer>
  <layer id="7" name="Capa de patrones 7" width="13" height="11">
   <data encoding="csv">
-0,0,0,0,0,0,0,0,0,0,258,260,0,
-0,0,0,0,0,0,0,0,0,0,262,253,0,
-0,0,0,0,0,0,0,0,0,0,0,257,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -117,8 +117,8 @@
  <layer id="8" name="Capa de patrones 8" width="13" height="11">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,83,0,0,
-0,0,0,0,0,0,0,0,0,0,0,83,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -132,15 +132,15 @@
  <layer id="13" name="Capa de patrones 9" width="13" height="11">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,283,0,0,0,0,0,287,0,
+0,0,0,291,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,277,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,280,0,0,0,0,
-0,283,0,277,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,288,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,274,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,277,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
@@ -169,10 +169,9 @@
   <object id="41" x="320" y="640" width="512" height="64"/>
   <object id="42" x="768" y="384" width="64" height="256"/>
   <object id="43" x="768" y="64" width="64" height="256"/>
-  <object id="44" x="704" y="64" width="64" height="128"/>
-  <object id="45" x="640" y="64" width="64" height="192"/>
   <object id="46" x="576" y="128" width="64" height="128"/>
   <object id="47" x="576" y="384" width="128" height="192"/>
   <object id="48" x="512" y="448" width="64" height="128"/>
+  <object id="49" x="640" y="128" width="64" height="128"/>
  </objectgroup>
 </map>

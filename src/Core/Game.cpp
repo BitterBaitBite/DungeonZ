@@ -38,7 +38,7 @@ bool Game::isRunning() const {
     return _window->isOpen();
 }
 
-void Game::update(uint32_t deltaMilliseconds) {
+void Game::update(uint32_t deltaTime) {
     // Check if user closed the window
     for (auto event = sf::Event(); _window->pollEvent(event);) {
         if (event.type == sf::Event::Closed) {
@@ -46,14 +46,17 @@ void Game::update(uint32_t deltaMilliseconds) {
         }
     }
 
-    _uiManager->update(*_window, deltaMilliseconds);
-
     if (!_gameStarted) {
-        _mainMenu->update(*_window);
+        _mainMenu->update(*_window, deltaTime);
         _gameStarted = _mainMenu->getStartPressed();
     }
     else {
-        _world->update(deltaMilliseconds);
+        _world->update(deltaTime);
+    }
+
+    _uiManager->update(*_window, deltaTime);
+    if (_uiManager->HasPressedRestart() || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+        reset();
     }
 }
 
@@ -69,4 +72,11 @@ void Game::render() {
     _uiManager->render(*_window, _gameStarted);
 
     _window->display();
+}
+
+void Game::reset() {
+    _gameStarted = false;
+    _mainMenu->reset();
+    _world->reset();
+    _uiManager->reset();
 }

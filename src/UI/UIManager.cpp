@@ -29,3 +29,17 @@ void UIManager::render(sf::RenderWindow& window, bool hasGameStarted) {
 
     _mouseCursor->render(window);
 }
+
+void UIManager::reset() {
+    _playerUI->reset();
+}
+
+bool UIManager::HasPressedRestart() const {
+    if (_playerUI == nullptr) return true;
+
+    if (_playerUI->HasPressedRestart()) {
+        return true;
+    }
+
+    return false;
+}

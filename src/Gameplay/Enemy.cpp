@@ -86,9 +86,7 @@ void Enemy::render(sf::RenderWindow& window) {
     _sprite.setTextureRect(spriteRect);
     window.draw(_sprite);
 
-    #ifdef DEBUG_MODE
-    debugSprite(window);
-    #endif
+    // debugSprite(window);
 }
 
 void Enemy::debugSprite(sf::RenderWindow& window) {
@@ -178,11 +176,11 @@ void Enemy::setFacingDirection() {
     }
     else if (_direction.y > 0.0f) {
         _faceDirection = DirectionEnum::Down;
-        _faceDirectionY = FaceDirectionY::Down;
+        _faceDirectionY = DirectionY::Down;
     }
     else if (_direction.y < 0.0f) {
         _faceDirection = DirectionEnum::Up;
-        _faceDirectionY = FaceDirectionY::Up;
+        _faceDirectionY = DirectionY::Up;
     }
 }
 

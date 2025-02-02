@@ -37,7 +37,6 @@ set(PROJECT_HEADERS
     include/Enums/EnemyType.h
     include/Enums/RoomType.h
 
-    include/Gameplay/Dungeon.h
     include/Gameplay/DynamiteGoblin.h
     include/Gameplay/Enemy.h
     include/Gameplay/GameObject.h
@@ -47,6 +46,7 @@ set(PROJECT_HEADERS
 
     include/Interfaces/IDamageable.h
 
+    include/Map/Dungeon.h
     include/Map/EnemyRoom.h
     include/Map/Room.h
 
@@ -72,13 +72,13 @@ set(PROJECT_SOURCES
     src/Core/WindowManager.cpp
     src/Core/World.cpp
 
-    src/Gameplay/Dungeon.cpp
     src/Gameplay/DynamiteGoblin.cpp
     src/Gameplay/Enemy.cpp
     src/Gameplay/Player.cpp
     src/Gameplay/TorchGoblin.cpp
     src/Gameplay/Villager.cpp
 
+    src/Map/Dungeon.cpp
     src/Map/EnemyRoom.cpp
     src/Map/Room.cpp
 

@@ -20,7 +20,7 @@ class Room {
         virtual void init(std::vector<DirectionEnum> adjacentRooms);
         std::bitset<4> getDirectionsMask(std::vector<DirectionEnum> directions);
         const char* getRoomMapPath(std::vector<DirectionEnum> availableRooms);
-        virtual void update(float deltaMilliseconds);
+        virtual void update(uint32_t deltaTime);
         virtual void render(sf::RenderWindow& window);
 
     protected:

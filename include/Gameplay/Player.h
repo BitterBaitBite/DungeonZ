@@ -36,6 +36,7 @@ class Player : public GameObject, public IDamageable {
         bool init(const PlayerInfo& playerInfo);
         void update(float deltaMilliseconds) override;
         void render(sf::RenderWindow& window) override;
+        void reset(PlayerInfo& playerInfo);
 
         void debugSprite(sf::RenderWindow& window);
         void debugHealth();
@@ -98,7 +99,7 @@ class Player : public GameObject, public IDamageable {
         sf::FloatRect _playerCollider { 0.f, 0.f, 0.f, 0.f };
         DirectionEnum _faceDirection { 0 };
         DirectionX _faceDirectionX { 0 };
-        FaceDirectionY _faceDirectionY { 0 };
+        DirectionY _faceDirectionY { 0 };
 
         void move(float deltaMilliseconds);
         void getMoveInput();

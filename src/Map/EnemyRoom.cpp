@@ -70,15 +70,15 @@ void EnemyRoom::clearDeadEnemies() {
     );
 }
 
-void EnemyRoom::update(float deltaMilliseconds) {
-    Room::update(deltaMilliseconds);
+void EnemyRoom::update(uint32_t deltaTime) {
+    Room::update(deltaTime);
 
     clearDeadEnemies();
 
     for (Enemy* enemy : _activeEnemies) {
         if (enemy == nullptr) continue;
 
-        enemy->update(deltaMilliseconds);
+        enemy->update(deltaTime);
     }
 }
 

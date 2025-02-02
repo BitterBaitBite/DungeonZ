@@ -158,10 +158,40 @@ void Player::render(sf::RenderWindow& window) {
         renderFire(window);
     }
 
+    // debugSprite(window);
+}
 
-    #ifdef DEBUG_MODE
-    debugSprite(window);
-    #endif
+void Player::reset(PlayerInfo& playerInfo) {
+    _isDead = false;
+    _isMoving = false;
+    _isBurning = false;
+    _isAttacking = false;
+    _isInvulnerable = false;
+    _direction = sf::Vector2f(.0f, .0f);
+    _faceDirection = DirectionEnum::Right;
+    _faceDirectionX = DirectionX::Right;
+    _faceDirectionY = DirectionY::Up;
+    _attackCounter = 0;
+    _currentTile = { 0, 0 };
+    _currentFireTile = { 0, 0 };
+
+    float posX = playerInfo.position.x - playerInfo.spriteWidth / 2;
+    float posY = playerInfo.position.y - playerInfo.spriteHeight / 2;
+    setPosition(sf::Vector2f(posX, posY));
+
+    _sprite.setTextureRect(sf::IntRect(0, 0, _spriteWidth, _spriteHeight));
+    _sprite.setColor(_spriteColor);
+    _fireSprite.setTextureRect(sf::IntRect(0, 0, _fireSpriteWidth, _fireSpriteHeight));
+
+    _maxHealth = playerInfo.maxHealth;
+    _currentHealth = _maxHealth;
+
+    _playerCollider = {
+        playerInfo.position.x - TILE_WIDTH / 3,
+        playerInfo.position.y,
+        2 * TILE_WIDTH / 3,
+        TILE_HEIGHT / 2
+    };
 }
 
 void Player::debugSprite(sf::RenderWindow& window) {
@@ -345,11 +375,11 @@ void Player::setFacingDirection() {
     }
     else if (_direction.y > 0.0f) {
         _faceDirection = DirectionEnum::Down;
-        _faceDirectionY = FaceDirectionY::Down;
+        _faceDirectionY = DirectionY::Down;
     }
     else if (_direction.y < 0.0f) {
         _faceDirection = DirectionEnum::Up;
-        _faceDirectionY = FaceDirectionY::Up;
+        _faceDirectionY = DirectionY::Up;
     }
 }
 
