@@ -1,7 +1,7 @@
 #pragma once
 
-// TODO: change most int types to uint8_t
-constexpr char* GAME_TITLE = "DungeonZ";
+// TODO: (OPTIMIZATION) change most int types to uint8_t
+constexpr auto GAME_TITLE = "DungeonZ";
 constexpr uint32_t FRAME_RATE_LIMIT = 60u;
 constexpr float MILLISECONDS_TO_SECONDS = 1 / 1000.f;
 constexpr float FRAMES_PER_SECOND = 10.f;

@@ -9,10 +9,6 @@ namespace tmx {
     class Map;
 }
 
-namespace sf {
-    Texture;
-}
-
 class AssetManager {
     public:
         static AssetManager* getInstance();

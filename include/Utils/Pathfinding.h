@@ -24,7 +24,7 @@ class Pathfinding {
             }
         };
 
-        static std::vector<sf::Vector2i> Pathfinding::getPath(
+        static std::vector<sf::Vector2i> getPath(
             sf::Vector2i start,
             sf::Vector2i goal,
             const std::array<std::array<bool, BACKGROUND_ROW_SIZE>, BACKGROUND_COL_SIZE>& grid);
