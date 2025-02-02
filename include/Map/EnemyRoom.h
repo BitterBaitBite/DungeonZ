@@ -9,7 +9,7 @@ enum class EnemyType;
 
 class EnemyRoom : public Room {
     public:
-        EnemyRoom(uint8_t enemyCount, EnemyType type);
+        EnemyRoom(uint8_t enemyCount = 1, EnemyType type = EnemyType::Default);
         ~EnemyRoom() override;
 
         void init(std::vector<DirectionEnum> adjacentRooms) override;
@@ -22,9 +22,9 @@ class EnemyRoom : public Room {
         std::vector<Enemy*> _enemyPool;
         std::vector<Enemy*> _activeEnemies;
         void initializeEnemies();
-        Enemy::EnemyInfo getDefaultEnemyInfo();
-        Villager::VillagerInfo getVillagerInfo();
-        TorchGoblin::TorchGoblinInfo getTorchGoblinInfo();
+        Enemy::EnemyInfo* getDefaultEnemyInfo();
+        Villager::VillagerInfo* getVillagerInfo();
+        TorchGoblin::TorchGoblinInfo* getTorchGoblinInfo();
 
     public:
         uint8_t getTotalEnemies() const { return _enemyPool.size(); }

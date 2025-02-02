@@ -9,7 +9,7 @@
 #include "Gameplay/Villager.h"
 #include "Utils/Constants.h"
 
-EnemyRoom::EnemyRoom(uint8_t enemyCount = 1, EnemyType type = EnemyType::Default) : _enemyType(type) {
+EnemyRoom::EnemyRoom(uint8_t enemyCount, EnemyType type) : _enemyType(type) {
     Enemy* enemy = nullptr;
     for (int i = 0; i < enemyCount; i++) {
         switch (type) {
@@ -93,21 +93,21 @@ void EnemyRoom::render(sf::RenderWindow& window) {
 }
 
 void EnemyRoom::initializeEnemies() {
-    Enemy::EnemyInfo* enemyInfo;
+    Enemy::EnemyInfo* enemyInfo { nullptr };
 
     // TODO: put the respective getters correctly
     switch (_enemyType) {
         case EnemyType::Villager:
-            enemyInfo = &getVillagerInfo();
+            enemyInfo = getVillagerInfo();
             break;
 
         case EnemyType::TorchGoblin:
-            enemyInfo = &getTorchGoblinInfo();
+            enemyInfo = getTorchGoblinInfo();
             break;
 
         case EnemyType::Default:
         default:
-            enemyInfo = &getDefaultEnemyInfo();
+            enemyInfo = getDefaultEnemyInfo();
             break;
     }
 
@@ -120,68 +120,74 @@ void EnemyRoom::initializeEnemies() {
         enemy->init(enemyInfo);
         _activeEnemies.push_back(enemy);
     }
+
+    delete enemyInfo;
 }
 
-Enemy::EnemyInfo EnemyRoom::getDefaultEnemyInfo() {
+Enemy::EnemyInfo* EnemyRoom::getDefaultEnemyInfo() {
     SpriteSheet::SpriteSheetInfo enemySpriteInfo;
     enemySpriteInfo.path = "../Data/Images/Enemies/Pawn_Purple.png";
     enemySpriteInfo.rows = 6;
     enemySpriteInfo.cols = 6;
     auto enemySpriteSheet = new SpriteSheet(enemySpriteInfo);
 
-    Enemy::EnemyInfo enemyInfo;
+    auto enemyInfo = new Enemy::EnemyInfo();
     sf::Texture* enemyTexture = AssetManager::getInstance()->loadTexture(enemySpriteSheet->getPath());
-    enemyInfo.texture = enemyTexture;
-    enemyInfo.speed = { 100.f * MILLISECONDS_TO_SECONDS, 100.f * MILLISECONDS_TO_SECONDS };
-    enemyInfo.spriteHeight = (enemyInfo.texture->getSize().y / enemySpriteSheet->getRows()) * enemyInfo.scale.y;
-    enemyInfo.spriteWidth = (enemyInfo.texture->getSize().x / enemySpriteSheet->getCols()) * enemyInfo.scale.x;
-    enemyInfo.maxHealth = 3;
+    enemyInfo->texture = enemyTexture;
+    enemyInfo->speed = { 100.f * MILLISECONDS_TO_SECONDS, 100.f * MILLISECONDS_TO_SECONDS };
+    enemyInfo->spriteHeight = (enemyInfo->texture->getSize().y / enemySpriteSheet->getRows()) * enemyInfo->scale.y;
+    enemyInfo->spriteWidth = (enemyInfo->texture->getSize().x / enemySpriteSheet->getCols()) * enemyInfo->scale.x;
+    enemyInfo->maxHealth = 3;
 
     return enemyInfo;
 }
 
-Villager::VillagerInfo EnemyRoom::getVillagerInfo() {
+Villager::VillagerInfo* EnemyRoom::getVillagerInfo() {
     SpriteSheet::SpriteSheetInfo enemySheetDesc;
     enemySheetDesc.path = "../Data/Images/Enemies/Pawn_Red.png";
     enemySheetDesc.rows = 6;
     enemySheetDesc.cols = 6;
     auto enemySpriteSheet = new SpriteSheet(enemySheetDesc);
 
-    Villager::VillagerInfo villagerInfo;
+    auto villagerInfo = new Villager::VillagerInfo();
     sf::Texture* enemyTexture = AssetManager::getInstance()->loadTexture(enemySpriteSheet->getPath());
-    villagerInfo.texture = enemyTexture;
-    villagerInfo.speed = { 100.f * MILLISECONDS_TO_SECONDS, 100.f * MILLISECONDS_TO_SECONDS };
-    villagerInfo.spriteHeight = villagerInfo.texture->getSize().y / enemySpriteSheet->getRows() * villagerInfo.scale.y;
-    villagerInfo.spriteWidth = villagerInfo.texture->getSize().x / enemySpriteSheet->getCols() * villagerInfo.scale.x;
-    villagerInfo.maxHealth = 3;
-    villagerInfo.attackDamage = 2;
+    villagerInfo->texture = enemyTexture;
+    villagerInfo->speed = { 100.f * MILLISECONDS_TO_SECONDS, 100.f * MILLISECONDS_TO_SECONDS };
+    villagerInfo->spriteHeight = villagerInfo->texture->getSize().y / enemySpriteSheet->getRows() * villagerInfo->scale.
+        y;
+    villagerInfo->spriteWidth = villagerInfo->texture->getSize().x / enemySpriteSheet->getCols() * villagerInfo->scale.
+        x;
+    villagerInfo->maxHealth = 3;
+    villagerInfo->attackDamage = 2;
 
     return villagerInfo;
 }
 
-TorchGoblin::TorchGoblinInfo EnemyRoom::getTorchGoblinInfo() {
+TorchGoblin::TorchGoblinInfo* EnemyRoom::getTorchGoblinInfo() {
     SpriteSheet::SpriteSheetInfo enemySheetDesc;
     enemySheetDesc.path = "../Data/Images/Enemies/Torch_Red.png";
     enemySheetDesc.rows = 5;
     enemySheetDesc.cols = 7;
     auto enemySpriteSheet = new SpriteSheet(enemySheetDesc);
 
-    TorchGoblin::TorchGoblinInfo torchGoblinInfo;
+    TorchGoblin::TorchGoblinInfo* torchGoblinInfo;
     sf::Texture* enemyTexture = AssetManager::getInstance()->loadTexture(enemySpriteSheet->getPath());
-    torchGoblinInfo.texture = enemyTexture;
-    torchGoblinInfo.speed = { 80.f * MILLISECONDS_TO_SECONDS, 80.f * MILLISECONDS_TO_SECONDS };
-    torchGoblinInfo.position = {
+    torchGoblinInfo->texture = enemyTexture;
+    torchGoblinInfo->speed = { 80.f * MILLISECONDS_TO_SECONDS, 80.f * MILLISECONDS_TO_SECONDS };
+    torchGoblinInfo->position = {
         WindowManager::getInstance()->getWindowCenter().x - TILE_WIDTH * 2,
         WindowManager::getInstance()->getWindowCenter().y
     };
-    torchGoblinInfo.spriteHeight = torchGoblinInfo.texture->getSize().y / enemySpriteSheet->getRows() * torchGoblinInfo.
+    torchGoblinInfo->spriteHeight = torchGoblinInfo->texture->getSize().y / enemySpriteSheet->getRows() *
+        torchGoblinInfo->
         scale.y;
-    torchGoblinInfo.spriteWidth = torchGoblinInfo.texture->getSize().x / enemySpriteSheet->getCols() * torchGoblinInfo.
+    torchGoblinInfo->spriteWidth = torchGoblinInfo->texture->getSize().x / enemySpriteSheet->getCols() * torchGoblinInfo
+        ->
         scale.x;
-    torchGoblinInfo.maxHealth = 5;
-    torchGoblinInfo.attackDamage = 1;
-    torchGoblinInfo.fireDamage = 1;
-    torchGoblinInfo.fireDuration = 3.f;
+    torchGoblinInfo->maxHealth = 5;
+    torchGoblinInfo->attackDamage = 1;
+    torchGoblinInfo->fireDamage = 1;
+    torchGoblinInfo->fireDuration = 3.f;
 
     return torchGoblinInfo;
 }
